@@ -234,6 +234,7 @@ export default function Dashboard() {
 
   const [recentPatients, setRecentPatients] = useState([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const loadUpcomingAppointments = () => {
     fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/appointments')
@@ -261,15 +262,16 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/dashboard')
-      .then((res) => res.json())
-      .then((data) => setStats(data))
-      .catch((err) => console.error('Dashboard stats error:', err));
-
-    fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/patients')
-      .then((res) => res.json())
-      .then((data) => setRecentPatients(data.slice(0, 5)))
-      .catch((err) => console.error('Patients fetch error:', err));
+    Promise.all([
+      fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/dashboard').then(res => res.json()),
+      fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/patients').then(res => res.json())
+    ])
+      .then(([dashboardData, patientsData]) => {
+        setStats(dashboardData);
+        setRecentPatients(patientsData.slice(0, 5));
+      })
+      .catch((err) => console.error('Dashboard data fetch error:', err))
+      .finally(() => setLoading(false));
 
     loadUpcomingAppointments();
 
@@ -305,6 +307,25 @@ export default function Dashboard() {
   ],
   []
 );
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', minHeight: '60vh', gap: '16px' }}>
+        <div className="payment-spinner" style={{ borderColor: 'rgba(79, 70, 229, 0.2)', borderTopColor: 'var(--primary-color)' }}></div>
+        <p style={{ color: 'var(--text-muted)', fontWeight: '500' }}>Fetching Live Data from Cloud...</p>
+        <style>{`
+          .payment-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+          }
+          @keyframes spin { 100% { transform: rotate(360deg); } }
+        `}</style>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '8px 16px' }}>
