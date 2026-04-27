@@ -1,231 +1,174 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from 'react-router-dom';
+import React from 'react';
+import { Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { 
-  LayoutDashboard, Users, Calendar, Receipt, LogOut, 
-  Moon, Sun, Headset, Stethoscope, Menu, X, 
-  Package, FileText, Beaker, Clipboard 
+  LayoutDashboard, 
+  Users, 
+  Calendar, 
+  Receipt, 
+  Package, 
+  FileText, 
+  LogOut, 
+  Moon, 
+  Sun,
+  Stethoscope,
+  ChevronLeft,
+  ChevronRight,
+  UserCircle
 } from 'lucide-react';
-import { GoogleOAuthProvider } from '@react-oauth/google';
-import './index.css';
-
 import Dashboard from './pages/Dashboard';
 import Patients from './pages/Patients';
 import Appointments from './pages/Appointments';
 import Billing from './pages/Billing';
-import Auth from './pages/Auth';
-import Landing from './pages/Landing';
-import HelpBot from './components/HelpBot';
-
-// New Role-Based Dashboards
-import PatientDashboard from './pages/PatientDashboard';
-import DoctorDashboard from './pages/DoctorDashboard';
-
-// New Modules
 import Inventory from './pages/Inventory';
-import Prescriptions from './pages/Prescriptions';
 import LabReports from './pages/LabReports';
+import Auth from './pages/Auth';
+import DoctorDashboard from './pages/DoctorDashboard';
+import PatientDashboard from './pages/PatientDashboard';
+import Prescriptions from './pages/Prescriptions';
 
-function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('isLoggedIn') === 'true';
-  });
-  const [darkMode, setDarkMode] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+function Sidebar({ userRole, userName }) {
+  const location = useLocation();
+  const [collapsed, setCollapsed] = React.useState(false);
+  const [darkMode, setDarkMode] = React.useState(false);
 
-  const safeValue = (value, fallback) => {
-    if (value === undefined || value === null || value === '' || value === 'undefined' || value === 'null') {
-      return fallback;
-    }
-    return value;
-  };
+  // Define navigation based on ROLES as analyzed
+  const navItems = [
+    // Common for Admin and Receptionist
+    { path: '/', label: 'Dashboard', icon: <LayoutDashboard size={20} />, roles: ['Admin', 'Receptionist'] },
+    
+    // Only Admin can see high-level analytics and staff (In this app, Dashboard handles analytics)
+    { path: '/patients', label: 'Patients', icon: <Users size={20} />, roles: ['Admin', 'Receptionist', 'Doctor'] },
+    
+    // Primary for Receptionist
+    { path: '/appointments', label: 'Appointments', icon: <Calendar size={20} />, roles: ['Admin', 'Receptionist', 'Doctor', 'Patient'] },
+    { path: '/billing', label: 'Billing', icon: <Receipt size={20} />, roles: ['Admin', 'Receptionist', 'Patient'] },
+    
+    // Inventory - Admin manages, Receptionist views
+    { path: '/inventory', label: 'Inventory', icon: <Package size={20} />, roles: ['Admin', 'Receptionist'] },
+    
+    // Clinical items
+    { path: '/lab-reports', label: 'Lab Reports', icon: <FileText size={20} />, roles: ['Admin', 'Doctor', 'Patient'] },
+    { path: '/prescriptions', label: 'Prescriptions', icon: <Stethoscope size={20} />, roles: ['Doctor', 'Patient'] },
+  ];
 
-  const rawUserName = localStorage.getItem('userName');
-  const rawUserRole = localStorage.getItem('userRole');
-  const rawUserEmail = localStorage.getItem('userEmail');
-  const rawUserPhone = localStorage.getItem('userPhone');
-
-  const userName = safeValue(rawUserName, 'System Admin');
-  const userRole = safeValue(rawUserRole, 'Admin');
-  const userEmail = safeValue(rawUserEmail, 'admin@medicare.com');
-  let userPhone = safeValue(rawUserPhone, '9876543210');
-
-  useEffect(() => {
-    if (darkMode) {
-      document.body.classList.add('dark');
-    } else {
-      document.body.classList.remove('dark');
-    }
-  }, [darkMode]);
-
-  const handleLogin = () => {
-    localStorage.setItem('isLoggedIn', 'true');
-    setIsAuthenticated(true);
-  };
+  const filteredNav = navItems.filter(item => item.roles.includes(userRole));
 
   const handleLogout = () => {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userPhone');
-    setIsAuthenticated(false);
+    localStorage.clear();
+    window.location.href = '/auth';
   };
 
-  const NavItem = ({ to, icon: Icon, label }) => (
-    <NavLink 
-      to={to} 
-      onClick={() => setSidebarOpen(false)} 
-      className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
-    >
-      <Icon size={20} /> {label}
-    </NavLink>
+  return (
+    <div style={{ 
+      width: collapsed ? '80px' : '260px', 
+      background: 'var(--sidebar-bg)', 
+      height: '100vh', 
+      transition: '0.3s', 
+      display: 'flex', 
+      flexDirection: 'column',
+      borderRight: '1px solid var(--border-color)',
+      position: 'sticky',
+      top: 0
+    }}>
+      <div style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ background: 'var(--primary-color)', padding: '8px', borderRadius: '12px' }}>
+          <Stethoscope color="white" size={24} />
+        </div>
+        {!collapsed && <span style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--text-main)' }}>MediCarePro</span>}
+      </div>
+
+      <div style={{ flex: 1, padding: '12px' }}>
+        {filteredNav.map(item => (
+          <Link 
+            key={item.path} 
+            to={item.path} 
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '12px 16px',
+              textDecoration: 'none',
+              color: location.pathname === item.path ? 'var(--primary-color)' : 'var(--text-muted)',
+              background: location.pathname === item.path ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
+              borderRadius: '12px',
+              marginBottom: '4px',
+              fontWeight: location.pathname === item.path ? '700' : '500',
+              transition: '0.2s'
+            }}
+          >
+            {item.icon}
+            {!collapsed && <span>{item.label}</span>}
+          </Link>
+        ))}
+      </div>
+
+      <div style={{ padding: '12px', borderTop: '1px solid var(--border-color)' }}>
+        <button 
+          onClick={() => setDarkMode(!darkMode)}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', border: 'none', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer' }}
+        >
+          {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+          {!collapsed && <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>}
+        </button>
+        <button 
+          onClick={handleLogout}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer' }}
+        >
+          <LogOut size={20} />
+          {!collapsed && <span>Logout</span>}
+        </button>
+      </div>
+    </div>
   );
+}
+
+function App() {
+  const userRole = localStorage.getItem('userRole');
+  const userName = localStorage.getItem('userName');
+  const token = localStorage.getItem('token');
+
+  if (!token) {
+    return (
+      <Routes>
+        <Route path="/auth" element={<Auth />} />
+        <Route path="*" element={<Navigate to="/auth" />} />
+      </Routes>
+    );
+  }
+
+  // Role-based Home Component
+  const Home = () => {
+    if (userRole === 'Doctor') return <DoctorDashboard />;
+    if (userRole === 'Patient') return <PatientDashboard />;
+    return <Dashboard />; // Admin and Receptionist use the main Dashboard (with role-based internal UI)
+  };
 
   return (
-    <GoogleOAuthProvider clientId="604836049021-tq8kl8hav9ne94tqmk7mmlf6h66f775t.apps.googleusercontent.com">
-      <Router>
-        {!isAuthenticated ? (
-          <Routes>
-            <Route path="/" element={<Landing onLoginClick={() => {}} />} />
-            <Route path="/auth" element={<Auth onLogin={handleLogin} />} />
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        ) : (
-          <div className="app-container" style={{ background: 'var(--bg-color)', minHeight: '100vh', width: '100vw' }}>
-            {sidebarOpen && (
-              <div 
-                style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 40 }}
-                onClick={() => setSidebarOpen(false)}
-              />
-            )}
-            
-            <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
-              <div className="sidebar-logo">
-                <Stethoscope size={32} color="#818cf8" strokeWidth={2.5} />
-                <span>MediCare<span style={{ color: '#818cf8' }}>Pro</span></span>
-              </div>
-
-              <nav style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '4px' }}>
-                {/* Admin & Receptionist Nav */}
-                {(userRole === 'Admin' || userRole === 'Hospital Admin' || userRole === 'Receptionist') && (
-                  <>
-                    <NavItem to="/" icon={LayoutDashboard} label="Admin Dashboard" />
-                    <NavItem to="/patients" icon={Users} label="Patients" />
-                    <NavItem to="/appointments" icon={Calendar} label="Appointments" />
-                    <NavItem to="/billing" icon={Receipt} label="Billing" />
-                    <NavItem to="/inventory" icon={Package} label="Inventory" />
-                    <NavItem to="/lab-reports" icon={Beaker} label="Lab Reports" />
-                  </>
-                )}
-
-                {/* Doctor Nav */}
-                {(userRole === 'Doctor' || userRole === 'Head Doctor') && (
-                  <>
-                    <NavItem to="/" icon={LayoutDashboard} label="Doctor Dashboard" />
-                    <NavItem to="/patients" icon={Users} label="My Patients" />
-                    <NavItem to="/appointments" icon={Calendar} label="My Schedule" />
-                    <NavItem to="/prescriptions" icon={FileText} label="Prescriptions" />
-                    <NavItem to="/lab-reports" icon={Beaker} label="Lab Reports" />
-                  </>
-                )}
-
-                {/* Patient Nav */}
-                {userRole === 'Patient' && (
-                  <>
-                    <NavItem to="/" icon={LayoutDashboard} label="My Dashboard" />
-                    <NavItem to="/appointments" icon={Calendar} label="My Appointments" />
-                    <NavItem to="/prescriptions" icon={FileText} label="My Prescriptions" />
-                    <NavItem to="/lab-reports" icon={Beaker} label="My Lab Reports" />
-                    <NavItem to="/billing" icon={Receipt} label="My Billings" />
-                  </>
-                )}
-              </nav>
-
-              <div style={{ marginTop: 'auto', borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
-                <button onClick={() => setDarkMode(!darkMode)} className="nav-item" style={{ width: '100%', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
-                  {darkMode ? <><Sun size={20} /> Light Mode</> : <><Moon size={20} /> Dark Mode</>}
-                </button>
-                <button onClick={handleLogout} className="nav-item" style={{ width: '100%', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', color: '#f87171' }}>
-                  <LogOut size={20} /> Logout
-                </button>
-              </div>
-            </aside>
-
-            <main className={`main-content ${sidebarOpen ? 'shifted' : ''}`} style={{ flex: 1, height: '100vh', overflowY: 'auto' }}>
-              <div className="glass-panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', position: 'sticky', top: 0, zIndex: 10, marginBottom: '24px', borderBottom: '1px solid var(--border-color)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <button className="mobile-menu-btn" onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-main)' }}>
-                    <Menu size={24} />
-                  </button>
-                  <h2 style={{ fontSize: '1.4rem', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>
-                    {userRole.includes('Admin') ? 'Admin Portal' : 
-                     userRole.includes('Doctor') ? 'Doctor Portal' : 
-                     userRole === 'Receptionist' ? 'Reception Portal' : 'Patient Portal'}
-                  </h2>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <div style={{ position: 'relative' }}>
-                    <div onClick={() => setShowProfile(!showProfile)} style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
-                      <div className="hide-on-mobile" style={{ textAlign: 'right' }}>
-                        <div style={{ fontWeight: '600', color: 'var(--text-main)' }}>{userName}</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{userRole}</div>
-                      </div>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--primary-color)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
-                        {userName.charAt(0).toUpperCase()}
-                      </div>
-                    </div>
-
-                    {showProfile && (
-                      <>
-                        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 999 }} onClick={() => setShowProfile(false)} />
-                        <div className="glass-panel" style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, width: '250px', padding: '20px', zIndex: 1000, background: darkMode ? '#1e293b' : '#fff' }}>
-                          <div style={{ textAlign: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '15px', marginBottom: '15px' }}>
-                            <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'var(--primary-color)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 'bold', margin: '0 auto 10px' }}>
-                              {userName.charAt(0).toUpperCase()}
-                            </div>
-                            <div style={{ fontWeight: '600' }}>{userName}</div>
-                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{userRole}</div>
-                          </div>
-                          <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '15px' }}>
-                            <div style={{ wordBreak: 'break-all' }}>Email: {userEmail}</div>
-                            <div>Phone: +91 {userPhone}</div>
-                          </div>
-                          <button onClick={handleLogout} style={{ width: '100%', padding: '10px', background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>
-                            Logout
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="page-content">
-                <Routes>
-                  {/* Dashboard Route changes based on role */}
-                  <Route path="/" element={
-                    userRole === 'Admin' || userRole === 'Hospital Admin' || userRole === 'Receptionist' ? <Dashboard /> :
-                    userRole === 'Doctor' || userRole === 'Head Doctor' ? <DoctorDashboard /> :
-                    <PatientDashboard />
-                  } />
-                  
-                  <Route path="/patients" element={<Patients />} />
-                  <Route path="/appointments" element={<Appointments />} />
-                  <Route path="/billing" element={<Billing />} />
-                  <Route path="/inventory" element={<Inventory />} />
-                  <Route path="/prescriptions" element={<Prescriptions />} />
-                  <Route path="/lab-reports" element={<LabReports />} />
-                  <Route path="*" element={<Navigate to="/" />} />
-                </Routes>
-              </div>
-            </main>
-            <HelpBot />
-          </div>
-        )}
-      </Router>
-    </GoogleOAuthProvider>
+    <div style={{ display: 'flex', background: 'var(--bg-color)', minHeight: '100vh' }}>
+      <Sidebar userRole={userRole} userName={userName} />
+      <div style={{ flex: 1, padding: '32px', maxWidth: '1400px', margin: '0 auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '32px', alignItems: 'center', gap: '16px' }}>
+           <div style={{ textAlign: 'right' }}>
+             <div style={{ fontWeight: '700', fontSize: '1rem' }}>{userName}</div>
+             <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{userRole} Portal</div>
+           </div>
+           <div style={{ width: '45px', height: '45px', borderRadius: '14px', background: 'var(--gradient-bg-1)', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800' }}>
+             {userName?.charAt(0).toUpperCase()}
+           </div>
+        </div>
+        
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/patients" element={<Patients />} />
+          <Route path="/appointments" element={<Appointments />} />
+          <Route path="/billing" element={<Billing />} />
+          <Route path="/inventory" element={<Inventory />} />
+          <Route path="/lab-reports" element={<LabReports />} />
+          <Route path="/prescriptions" element={<Prescriptions />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </div>
+    </div>
   );
 }
 
