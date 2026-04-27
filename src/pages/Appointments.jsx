@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar as CalIcon, UserCheck, Stethoscope, Banknote, ShieldCheck, Plus, X, CheckCircle2, Loader2, CreditCard, Smartphone, Building2 } from 'lucide-react';
+import { Calendar as CalIcon, Stethoscope, Smartphone, CreditCard, Building2, X, CheckCircle2, Loader2, ShieldCheck, HelpCircle, User, Phone, Mail, Hash, UserCircle } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -9,24 +9,22 @@ const timeSlots = [
   "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM"
 ];
 
-export default function AppointmentsAndDoctors() {
-  const [activeTab, setActiveTab] = useState('appointments');
+export default function Appointments() {
   const [appointments, setAppointments] = useState([]);
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showApptForm, setShowApptForm] = useState(false);
+  
   const [apptForm, setApptForm] = useState({ 
     patientId: '', patientName: '', phone: '', email: '', age: '', gender: '', doctorId: '', 
-    appointmentDate: new Date(), 
-    appointmentTime: '', reason: '' 
+    appointmentDate: new Date(), appointmentTime: '', reason: '' 
   });
+
+  const [paymentState, setPaymentState] = useState({ state: 'none', method: 'upi', fee: 0, doctorName: '' });
 
   const userRole = localStorage.getItem('userRole') || 'Patient';
   const userEmail = localStorage.getItem('userEmail') || '';
   const userName = localStorage.getItem('userName') || '';
-
-  const [paymentState, setPaymentState] = useState({ state: 'none', method: '', message: '', fee: 0, doctorName: '' });
 
   useEffect(() => {
     fetchData();
@@ -64,125 +62,165 @@ export default function AppointmentsAndDoctors() {
     setLoading(false);
   };
 
-  const handleBookApptClick = (e) => {
+  const handleBookClick = (e) => {
     e.preventDefault();
     if (!apptForm.doctorId || !apptForm.patientName || !apptForm.appointmentTime) return alert("Please fill all fields.");
     const doc = doctors.find(d => d.id === parseInt(apptForm.doctorId));
-    setPaymentState({ state: 'paying', method: '', message: '', fee: doc ? doc.consultationFee : 500, doctorName: doc ? doc.name : 'Specialist' });
+    setPaymentState({ ...paymentState, state: 'paying', fee: doc ? doc.consultationFee : 1500, doctorName: doc ? doc.name : 'Specialist' });
   };
 
-  const processPayment = async (method) => {
-    setPaymentState(prev => ({...prev, state: 'validating', method}));
-    setTimeout(async () => {
-      await finalizeAppointment();
-    }, 2000);
-  };
-
-  const finalizeAppointment = async () => {
+  const finalizePayment = async () => {
+    setPaymentState(prev => ({ ...prev, state: 'validating' }));
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      
       let finalPatientId = apptForm.patientId;
       if (!finalPatientId) {
         const pRes = await fetch(`${apiUrl}/api/patients`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            name: apptForm.patientName, 
-            phone: apptForm.phone || 'N/A', 
-            email: apptForm.email || `${apptForm.patientName.toLowerCase().replace(/ /g,'')}@example.com`, 
-            age: parseInt(apptForm.age) || 25, 
-            gender: apptForm.gender || 'Other' 
-          })
+          body: JSON.stringify({ name: apptForm.patientName, phone: apptForm.phone, email: apptForm.email, age: parseInt(apptForm.age) || 25, gender: apptForm.gender || 'Other' })
         });
         const newPat = await pRes.json();
         finalPatientId = newPat.id;
       }
 
-      const payload = { 
-        patientId: parseInt(finalPatientId), 
-        doctorId: parseInt(apptForm.doctorId),
-        appointmentDate: apptForm.appointmentDate,
-        appointmentTime: apptForm.appointmentTime,
-        reason: apptForm.reason || 'General Checkup',
-        status: 'Scheduled'
-      };
-
       await fetch(`${apiUrl}/api/appointments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ ...apptForm, patientId: parseInt(finalPatientId), doctorId: parseInt(apptForm.doctorId), status: 'Scheduled' })
       });
       
       await fetch(`${apiUrl}/api/bills`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          patientId: parseInt(finalPatientId), 
-          amount: parseFloat(paymentState.fee), 
-          description: `Consultation Fee - Dr. ${paymentState.doctorName}`, 
-          status: 'Paid' 
-        })
+        body: JSON.stringify({ patientId: parseInt(finalPatientId), amount: parseFloat(paymentState.fee), description: `Consultation Fee - Dr. ${paymentState.doctorName}`, status: 'Paid' })
       });
 
-      setPaymentState(prev => ({...prev, state: 'success', message: 'Appointment Confirmed!'}));
+      setPaymentState(prev => ({ ...prev, state: 'success' }));
       setTimeout(() => {
-        setPaymentState({ state: 'none', method: '', message: '', fee: 0, doctorName: '' });
-        setShowApptForm(false);
+        setPaymentState({ state: 'none', method: 'upi', fee: 0, doctorName: '' });
         fetchData();
         setApptForm({ patientId: '', patientName: '', phone: '', email: '', age: '', gender: '', doctorId: '', appointmentDate: new Date(), appointmentTime: '', reason: '' });
-      }, 2000);
+      }, 2500);
     } catch (err) {
       console.error(err);
-      setPaymentState({ state: 'none', method: '', message: '', fee: 0, doctorName: '' });
+      setPaymentState({ state: 'none', method: 'upi', fee: 0, doctorName: '' });
     }
   };
 
   return (
     <div className="fade-in">
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: '800', margin: 0 }}>Appointments & Roster</h1>
-          <p style={{ color: 'var(--text-muted)', margin: '4px 0 0 0' }}>{userRole === 'Doctor' ? 'Your personal schedule.' : 'Manage hospital bookings.'}</p>
-        </div>
-        {(userRole === 'Receptionist' || userRole === 'Patient') && (
-          <button onClick={() => setShowApptForm(true)} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Plus size={20} /> Book New Appointment
+      {/* Top Header Section as seen in photo 2 */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h1 style={{ fontSize: '1.8rem', fontWeight: '800', margin: 0 }}>Appointments</h1>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '25px', background: '#e0e7ff', color: '#4f46e5', border: 'none' }}>
+            <HelpCircle size={18} /> Help / Support
           </button>
-        )}
+        </div>
       </div>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', borderBottom: '2px solid var(--border-color)', paddingBottom: '16px' }}>
-        <button onClick={() => setActiveTab('appointments')} style={activeTab === 'appointments' ? activeTabStyle : inactiveTabStyle}>
-          <CalIcon size={18} /> {userRole === 'Doctor' ? 'My Schedule' : 'Manage Appointments'}
-        </button>
-        <button onClick={() => setActiveTab('doctors')} style={activeTab === 'doctors' ? activeTabStyle : inactiveTabStyle}>
-          <Stethoscope size={18} /> Doctor Directory
-        </button>
-      </div>
+      {/* Booking Card Form (Photo 2) */}
+      {(userRole === 'Receptionist' || userRole === 'Patient' || userRole === 'Admin') && (
+        <div className="glass-panel" style={{ padding: '24px', marginBottom: '32px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}>
+          <h4 style={{ color: '#4f46e5', marginBottom: '20px', fontSize: '1rem' }}>Patient Details (Auto-fills for returning patients)</h4>
+          <form onSubmit={handleBookClick}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+              <div>
+                <label style={labelStyle}>Patient Name:</label>
+                <input required placeholder="Patient Name" value={apptForm.patientName} onChange={e => setApptForm({...apptForm, patientName: e.target.value})} className="form-input" />
+              </div>
+              <div>
+                <label style={labelStyle}>Phone Number:</label>
+                <input placeholder="Phone Number (10 Digits)" value={apptForm.phone} onChange={e => setApptForm({...apptForm, phone: e.target.value})} className="form-input" />
+              </div>
+              <div>
+                <label style={labelStyle}>Email Address:</label>
+                <input placeholder="Email Address" value={apptForm.email} onChange={e => setApptForm({...apptForm, email: e.target.value})} className="form-input" />
+              </div>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={labelStyle}>Age:</label>
+                  <input placeholder="Age" type="number" value={apptForm.age} onChange={e => setApptForm({...apptForm, age: e.target.value})} className="form-input" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={labelStyle}>Gender:</label>
+                  <select value={apptForm.gender} onChange={e => setApptForm({...apptForm, gender: e.target.value})} className="form-input">
+                    <option value="">Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+            </div>
 
-      <div className="glass-panel" style={{ overflowX: 'auto' }}>
+            <h4 style={{ color: '#4f46e5', marginBottom: '20px', fontSize: '1rem' }}>Consultation Details</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', alignItems: 'end' }}>
+              <div>
+                <label style={labelStyle}>Target Doctor:</label>
+                <select required value={apptForm.doctorId} onChange={e => setApptForm({...apptForm, doctorId: e.target.value})} className="form-input">
+                  <option value="">Select Target Doctor</option>
+                  {doctors.map(d => <option key={d.id} value={d.id}>Dr. {d.name} ({d.specialty})</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={labelStyle}>Checkup Date:</label>
+                <DatePicker selected={apptForm.appointmentDate} onChange={date => setApptForm({...apptForm, appointmentDate: date})} className="form-input" placeholderText="dd-mm-yyyy" />
+              </div>
+              <div>
+                <label style={labelStyle}>Time Slot:</label>
+                <select required value={apptForm.appointmentTime} onChange={e => setApptForm({...apptForm, appointmentTime: e.target.value})} className="form-input">
+                  <option value="">Select Time Slot</option>
+                  {timeSlots.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={labelStyle}>Reason:</label>
+                <input placeholder="Reason (e.g. Fever checkup)" value={apptForm.reason} onChange={e => setApptForm({...apptForm, reason: e.target.value})} className="form-input" />
+              </div>
+              <button type="submit" className="btn-primary" style={{ height: '48px', borderRadius: '10px', background: '#10b981', border: 'none', color: 'white', fontWeight: '700', cursor: 'pointer' }}>
+                Proceed to Pay
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Appointments List (Photo 2 Table Style) */}
+      <div className="glass-panel" style={{ padding: '0', overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
-            <tr style={{ background: 'var(--sidebar-bg)', borderBottom: '1px solid var(--border-color)' }}>
+            <tr style={{ borderBottom: '1px solid #eee' }}>
               <th style={thStyle}>Date & Time</th>
-              <th style={thStyle}>Patient</th>
-              <th style={thStyle}>Doctor</th>
-              <th style={thStyle}>Reason</th>
-              <th style={thStyle}>Status</th>
+              <th style={thStyle}>Patient Details</th>
+              <th style={thStyle}>Assignee Doctor</th>
+              <th style={thStyle}>Case Reason</th>
+              <th style={thStyle}>Fee Paid</th>
+              <th style={thStyle}>Current Status</th>
             </tr>
           </thead>
           <tbody>
-            {loading ? <tr><td colSpan="5" style={tdStyle}>Loading...</td></tr> : appointments.length === 0 ? <tr><td colSpan="5" style={tdStyle}>No records found.</td></tr> : appointments.map(a => (
-              <tr key={a.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <td style={tdStyle}>{new Date(a.appointmentDate).toLocaleDateString()}<br/><span style={{fontSize:'0.8rem', color:'var(--text-muted)'}}>{a.appointmentTime}</span></td>
-                <td style={tdStyle}>{a.patient?.name}</td>
-                <td style={tdStyle}>Dr. {a.doctor?.name}</td>
-                <td style={tdStyle}>{a.reason}</td>
+            {loading ? <tr><td colSpan="6" style={tdStyle}>Loading appointments...</td></tr> : appointments.length === 0 ? <tr><td colSpan="6" style={tdStyle}>No records found.</td></tr> : appointments.map(a => (
+              <tr key={a.id} style={{ borderBottom: '1px solid #f9f9f9' }}>
                 <td style={tdStyle}>
-                  <span style={{ padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', background: a.status === 'Completed' ? '#d1fae5' : '#fef3c7', color: a.status === 'Completed' ? '#065f46' : '#d97706' }}>
+                  <div style={{ fontWeight: '700' }}>{new Date(a.appointmentDate).toLocaleDateString('en-GB')}</div>
+                  <div style={{ fontSize: '0.8rem', color: '#666' }}>{a.appointmentTime}</div>
+                </td>
+                <td style={tdStyle}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ color: '#4f46e5' }}><UserCircle size={18} /></div>
+                    <span>{a.patient?.name}</span>
+                  </div>
+                </td>
+                <td style={tdStyle}>
+                  <div style={{ fontWeight: '700' }}>Dr. {a.doctor?.name}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#4f46e5', background: '#f0f4ff', display: 'inline-block', padding: '2px 8px', borderRadius: '10px' }}>{a.doctor?.specialty}</div>
+                </td>
+                <td style={tdStyle}>{a.reason}</td>
+                <td style={{ ...tdStyle, fontWeight: '700', color: '#10b981' }}>₹{doctors.find(d => d.id === a.doctorId)?.consultationFee || 1500}</td>
+                <td style={tdStyle}>
+                  <span style={{ padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700', background: a.status === 'Completed' ? '#d1fae5' : '#fff7ed', color: a.status === 'Completed' ? '#065f46' : '#9a3412', border: '1px solid currentColor' }}>
                     {a.status}
                   </span>
                 </td>
@@ -192,81 +230,74 @@ export default function AppointmentsAndDoctors() {
         </table>
       </div>
 
-      {showApptForm && (
-        <div style={overlayStyle}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '500px', padding: '32px', background: 'white' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
-              <h2 style={{ margin: 0 }}>Book Appointment</h2>
-              <button onClick={() => setShowApptForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
-            </div>
-            <form onSubmit={handleBookApptClick} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <input required placeholder="Patient Full Name" value={apptForm.patientName} onChange={e => setApptForm({...apptForm, patientName: e.target.value})} style={inputStyle} />
-              <select required value={apptForm.doctorId} onChange={e => setApptForm({...apptForm, doctorId: e.target.value})} style={inputStyle}>
-                <option value="">-- Select Doctor --</option>
-                {doctors.map(d => <option key={d.id} value={d.id}>Dr. {d.name} ({d.specialty})</option>)}
-              </select>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <DatePicker selected={apptForm.appointmentDate} onChange={date => setApptForm({...apptForm, appointmentDate: date})} className="form-input" style={{ width: '100%' }} placeholderText="Select Date" />
-                <select required value={apptForm.appointmentTime} onChange={e => setApptForm({...apptForm, appointmentTime: e.target.value})} style={inputStyle}>
-                  <option value="">-- Time --</option>
-                  {timeSlots.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
-              <input placeholder="Reason for Visit" value={apptForm.reason} onChange={e => setApptForm({...apptForm, reason: e.target.value})} style={inputStyle} />
-              <button type="submit" className="btn-primary" style={{ padding: '14px' }}>Proceed to Payment</button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Reverted Payment Modal with Old Logic */}
+      {/* Payment Modal (Photo 3 QR Style) */}
       {paymentState.state !== 'none' && (
         <div style={overlayStyle}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '550px', padding: '32px', background: 'white' }}>
-            {paymentState.state === 'paying' && (
-              <div style={{ width: '100%' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', marginBottom: '24px' }}>
-                  <h2 style={{ fontSize: '1.2rem', margin: 0 }}>Select Payment Method</h2>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '700px', padding: '0', background: 'white', borderRadius: '30px', overflow: 'hidden' }}>
+            {paymentState.state === 'paying' ? (
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div style={{ padding: '32px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <h2 style={{ fontSize: '1.4rem', margin: '0 0 4px 0', color: '#333' }}>Select Payment Method</h2>
+                  </div>
                   <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>Total Payable</p>
-                    <p style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--primary-color)', margin: 0 }}>₹{paymentState.fee}</p>
+                    <p style={{ fontSize: '0.8rem', color: '#666', margin: 0 }}>Total Payable</p>
+                    <p style={{ fontSize: '1.8rem', fontWeight: '900', color: '#4f46e5', margin: 0 }}>₹{paymentState.fee}</p>
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '24px' }}>
-                  {[
-                    { id: 'upi', icon: <Smartphone />, label: 'UPI (GPay, PhonePe)' },
-                    { id: 'card', icon: <CreditCard />, label: 'Credit/Debit Card' },
-                    { id: 'net', icon: <Building2 />, label: 'Net Banking' },
-                    { id: 'cash', icon: <Banknote />, label: 'Counter Cash' }
-                  ].map(method => (
-                    <button key={method.id} onClick={() => processPayment(method.label)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '20px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'none', cursor: 'pointer', transition: '0.2s' }}>
-                      <div style={{ color: 'var(--primary-color)' }}>{method.icon}</div>
-                      <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{method.label}</div>
+                <div style={{ display: 'flex', minHeight: '300px', background: '#f8fafc' }}>
+                  {/* Sidebar methods */}
+                  <div style={{ width: '220px', borderRight: '1px solid #e2e8f0', padding: '20px' }}>
+                    <button onClick={() => setPaymentState({...paymentState, method: 'upi'})} style={paymentMethodStyle(paymentState.method === 'upi')}>
+                      UPI / QR Scan
                     </button>
-                  ))}
-                </div>
-                <button onClick={() => setPaymentState({ ...paymentState, state: 'none' })} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'none', cursor: 'pointer' }}>Cancel</button>
-              </div>
-            )}
+                    <button onClick={() => setPaymentState({...paymentState, method: 'card'})} style={paymentMethodStyle(paymentState.method === 'card')}>
+                      Credit / Debit Card
+                    </button>
+                    <button onClick={() => setPaymentState({...paymentState, method: 'net'})} style={paymentMethodStyle(paymentState.method === 'net')}>
+                      Netbanking
+                    </button>
+                  </div>
 
-            {paymentState.state === 'validating' && (
-              <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                <Loader2 size={48} className="spin" color="var(--primary-color)" style={{ marginBottom: '20px' }} />
-                <h3>Verifying {paymentState.method}...</h3>
-                <p style={{ color: 'var(--text-muted)' }}>Please do not refresh or close this window.</p>
-              </div>
-            )}
-
-            {paymentState.state === 'success' && (
-              <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#d1fae5', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
-                  <ShieldCheck size={48} />
+                  {/* Main QR Area */}
+                  <div style={{ flex: 1, padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ background: 'white', padding: '16px', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', marginBottom: '16px' }}>
+                      <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=MediCareProPayment" alt="QR Code" style={{ width: '160px', height: '160px' }} />
+                    </div>
+                    <p style={{ fontSize: '0.9rem', color: '#444', marginBottom: '8px' }}>Scan with any UPI app</p>
+                    <div style={{ display: 'flex', gap: '12px', opacity: 0.6 }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: '800' }}>GPay</span>
+                      <span style={{ fontSize: '0.75rem', fontWeight: '800' }}>PhonePe</span>
+                      <span style={{ fontSize: '0.75rem', fontWeight: '800' }}>Paytm</span>
+                    </div>
+                  </div>
                 </div>
-                <h2 style={{ color: '#065f46', marginBottom: '8px' }}>Payment Successful!</h2>
-                <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Your appointment with Dr. {paymentState.doctorName} is confirmed.</p>
-                <div style={{ padding: '16px', borderRadius: '12px', background: 'var(--bg-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--primary-color)', fontWeight: '700' }}>
-                  <CheckCircle2 size={20} /> Booking ID: APT-{Math.floor(Math.random()*9000)+1000}
+
+                <div style={{ padding: '24px 40px', display: 'flex', gap: '16px', borderTop: '1px solid #eee' }}>
+                  <button onClick={() => setPaymentState({...paymentState, state: 'none'})} style={{ flex: 1, padding: '14px', borderRadius: '10px', border: '1px solid #ddd', background: 'white', fontWeight: '700', cursor: 'pointer' }}>
+                    Cancel Transaction
+                  </button>
+                  <button onClick={finalizePayment} style={{ flex: 1, padding: '14px', borderRadius: '10px', border: 'none', background: '#10b981', color: 'white', fontWeight: '700', cursor: 'pointer' }}>
+                    Confirm Payment (Simulator)
+                  </button>
+                </div>
+              </div>
+            ) : paymentState.state === 'validating' ? (
+              <div style={{ padding: '80px 40px', textAlign: 'center' }}>
+                <Loader2 size={60} className="spin" color="#4f46e5" style={{ marginBottom: '24px' }} />
+                <h2 style={{ marginBottom: '8px' }}>Processing Payment...</h2>
+                <p style={{ color: '#666' }}>Please wait while we verify your transaction.</p>
+              </div>
+            ) : (
+              <div style={{ padding: '80px 40px', textAlign: 'center' }}>
+                <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: '#d1fae5', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+                  <ShieldCheck size={60} />
+                </div>
+                <h1 style={{ color: '#065f46', margin: '0 0 8px 0' }}>Payment Success!</h1>
+                <p style={{ color: '#666', fontSize: '1.1rem' }}>Appointment Confirmed with Dr. {paymentState.doctorName}</p>
+                <div style={{ marginTop: '32px', padding: '16px', background: '#f0fdf4', borderRadius: '12px', display: 'inline-block', fontWeight: '700', color: '#10b981', border: '1px solid #10b981' }}>
+                  <CheckCircle2 size={20} style={{ verticalAlign: 'middle', marginRight: '8px' }} /> Booking Confirmed
                 </div>
               </div>
             )}
@@ -277,9 +308,12 @@ export default function AppointmentsAndDoctors() {
   );
 }
 
-const activeTabStyle = { display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', background: 'var(--primary-color)', color: 'white', border: 'none', borderRadius: '14px', cursor: 'pointer', fontWeight: '700' };
-const inactiveTabStyle = { display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', background: 'none', color: 'var(--text-muted)', border: 'none', cursor: 'pointer', fontWeight: '600' };
-const inputStyle = { padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--input-bg)', color: 'var(--text-main)', outline: 'none' };
-const overlayStyle = { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' };
-const thStyle = { padding: '16px', color: 'var(--text-muted)', fontSize: '0.85rem' };
-const tdStyle = { padding: '16px', color: 'var(--text-main)' };
+const labelStyle = { display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#333', marginBottom: '8px' };
+const paymentMethodStyle = (isActive) => ({
+  width: '100%', padding: '14px 20px', borderRadius: '12px', textAlign: 'left', border: 'none', 
+  background: isActive ? '#4f46e5' : 'transparent', color: isActive ? 'white' : '#444', 
+  fontWeight: '700', cursor: 'pointer', marginBottom: '8px', transition: '0.2s'
+});
+const thStyle = { padding: '20px 16px', color: '#666', fontSize: '0.85rem', fontWeight: '600', background: '#f8fafc' };
+const tdStyle = { padding: '20px 16px', color: '#333', fontSize: '0.9rem' };
+const overlayStyle = { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' };
