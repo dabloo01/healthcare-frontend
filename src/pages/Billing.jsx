@@ -8,8 +8,8 @@ export default function Billing() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ patientId: '', patientName: '', amount: '', description: '' });
-
-  const [printBill, setPrintBill] = useState(null);
+  const userRole = localStorage.getItem('userRole') || 'Patient';
+  const userEmail = localStorage.getItem('userEmail') || '';
 
   useEffect(() => {
     fetchData();
@@ -23,14 +23,23 @@ export default function Billing() {
         fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/patients'),
         fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/appointments')
       ]);
-      setBills(await billsRes.json());
-      setPatients(await patRes.json());
-      setAppointments(await apptRes.json());
+      const billData = await billsRes.json();
+      const patData = await patRes.json();
+      const apptData = await apptRes.json();
+
+      if (userRole === 'Patient' || userRole === 'Customer') {
+        setBills(billData.filter(b => b.patient?.email === userEmail));
+      } else {
+        setBills(billData);
+      }
+      setPatients(patData);
+      setAppointments(apptData);
     } catch (err) {
       console.error(err);
     }
     setLoading(false);
   };
+
 
   const handlePatientSelection = (e) => {
     const val = e.target.value;

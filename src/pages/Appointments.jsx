@@ -20,10 +20,11 @@ export default function AppointmentsAndDoctors() {
   
   const [showApptForm, setShowApptForm] = useState(false);
   const [apptForm, setApptForm] = useState({ 
-    patientId: '', patientName: '', phone: '', email: '', age: '', gender: '', doctorId: '', 
-    appointmentDate: null, 
     appointmentTime: '', reason: '' 
   });
+
+  const userRole = localStorage.getItem('userRole') || 'Patient';
+  const userEmail = localStorage.getItem('userEmail') || '';
 
   const [showDocForm, setShowDocForm] = useState(false);
   const [docForm, setDocForm] = useState({ name: '', specialty: '', phone: '', email: '', consultationFee: 500 });
@@ -42,8 +43,15 @@ export default function AppointmentsAndDoctors() {
         fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/patients'),
         fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/doctors')
       ]);
-      setAppointments(await apptcRes.json());
-      setPatients(await patRes.json());
+      const apptData = await apptcRes.json();
+      const patData = await patRes.json();
+      
+      if (userRole === 'Patient') {
+        setAppointments(apptData.filter(a => a.patient?.email === userEmail));
+      } else {
+        setAppointments(apptData);
+      }
+      setPatients(patData);
       setDoctors(await docRes.json());
     } catch (err) {
       console.error(err);
