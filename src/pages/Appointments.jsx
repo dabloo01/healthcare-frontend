@@ -63,8 +63,24 @@ export default function Appointments() {
   };
 
   const handleNameChange = (e) => {
-    const val = e.target.value.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-    setApptForm({ ...apptForm, patientName: val });
+    const rawVal = e.target.value;
+    const val = rawVal.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    
+    // Auto-fill logic
+    const matched = patients.find(p => p.name.toLowerCase() === val.toLowerCase());
+    if (matched) {
+      setApptForm({ 
+        ...apptForm, 
+        patientName: val, 
+        patientId: matched.id,
+        phone: matched.phone || '',
+        email: matched.email || '',
+        age: matched.age || '',
+        gender: matched.gender || ''
+      });
+    } else {
+      setApptForm({ ...apptForm, patientName: val, patientId: '' });
+    }
   };
 
   const handlePhoneChange = (e) => {
@@ -143,7 +159,17 @@ export default function Appointments() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
               <div>
                 <label style={labelStyle}>Patient Name:</label>
-                <input required placeholder="Patient Name" value={apptForm.patientName} onChange={handleNameChange} className="form-input" />
+                <input 
+                  required 
+                  list="patient-list"
+                  placeholder="Patient Name" 
+                  value={apptForm.patientName} 
+                  onChange={handleNameChange} 
+                  className="form-input" 
+                />
+                <datalist id="patient-list">
+                  {patients.map(p => <option key={p.id} value={p.name} />)}
+                </datalist>
               </div>
               <div>
                 <label style={labelStyle}>Phone Number:</label>
