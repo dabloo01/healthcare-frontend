@@ -23,22 +23,30 @@ export default function Billing() {
         fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/patients'),
         fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/appointments')
       ]);
+      
       const billData = await billsRes.json();
       const patData = await patRes.json();
       const apptData = await apptRes.json();
 
-      if (userRole === 'Patient' || userRole === 'Customer') {
-        setBills(billData.filter(b => b.patient?.email === userEmail));
+      if (Array.isArray(billData)) {
+        if (userRole === 'Patient' || userRole === 'Customer') {
+          setBills(billData.filter(b => b.patient && b.patient.email === userEmail));
+        } else {
+          setBills(billData);
+        }
       } else {
-        setBills(billData);
+        setBills([]);
       }
-      setPatients(patData);
-      setAppointments(apptData);
+      
+      setPatients(Array.isArray(patData) ? patData : []);
+      setAppointments(Array.isArray(apptData) ? apptData : []);
     } catch (err) {
-      console.error(err);
+      console.error("Billing fetch error:", err);
+      setBills([]);
     }
     setLoading(false);
   };
+
 
 
   const handlePatientSelection = (e) => {
