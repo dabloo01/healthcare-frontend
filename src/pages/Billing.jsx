@@ -186,7 +186,7 @@ export default function Billing() {
                   <tbody>
                     <tr>
                       <td style={{ padding: '16px 12px', borderBottom: '1px solid #e5e7eb', fontSize: '1rem' }}>{printBill.description || 'Hospital Services & Consultation'}</td>
-                      <td style={{ padding: '16px 12px', borderBottom: '1px solid #e5e7eb', textAlign: 'right', fontSize: '1rem', fontWeight: 'bold' }}>₹{printBill.amount.toFixed(2)}</td>
+                      <td style={{ padding: '16px 12px', borderBottom: '1px solid #e5e7eb', textAlign: 'right', fontSize: '1rem', fontWeight: 'bold' }}>₹{(printBill.amount || 0).toFixed(2)}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -207,7 +207,7 @@ export default function Billing() {
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <p style={{ margin: '0 0 4px 0', color: '#6b7280', fontSize: '1rem' }}>Total Amount</p>
-                    <p style={{ margin: 0, fontSize: '2rem', fontWeight: '900', color: '#111827' }}>₹{printBill.amount.toFixed(2)}</p>
+                    <p style={{ margin: 0, fontSize: '2rem', fontWeight: '900', color: '#111827' }}>₹{(printBill.amount || 0).toFixed(2)}</p>
                   </div>
                 </div>
 
@@ -270,7 +270,7 @@ export default function Billing() {
                 </td>
                 <td style={tdStyle}>{b.patient?.name}</td>
                 <td style={tdStyle}>{b.description || '-'}</td>
-                <td style={{ ...tdStyle, fontWeight: '600' }}>₹{b.amount}</td>
+                <td style={{ ...tdStyle, fontWeight: '600' }}>₹{b.amount || 0}</td>
                 <td style={tdStyle}>
                   <span style={{ padding: '6px 10px', borderRadius: '12px', fontSize: '0.8rem', background: b.status === 'Paid' ? '#d1fae5' : '#fee2e2', color: b.status === 'Paid' ? '#065f46' : '#991b1b', border: '1px solid currentColor', fontWeight: '500' }}>
                     {b.status}
