@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Clock, Stethoscope } from 'lucide-react';
+import { ShieldCheck, Clock, Stethoscope, Eye, EyeOff } from 'lucide-react';
 
 export default function Auth({ onLogin }) {
   const [authFlow, setAuthFlow] = useState('login');
+  const [showPassword, setShowPassword] = useState(false);
 
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -334,25 +335,35 @@ export default function Auth({ onLogin }) {
 
                   <div>
                     <label style={labelStyle}>Password</label>
-                    <input
-                      type="password"
-                      name="password"
-                      autoComplete="current-password"
-                      placeholder="••••••••"
-                      style={{
-                        ...inputStyle,
-                        background: '#f8fafc',
-                        border: '2px solid #e2e8f0',
-                        width: '100%',
-                        boxSizing: 'border-box',
-                        marginTop: '8px',
-                        padding: '14px',
-                        borderRadius: '12px'
-                      }}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        name="password"
+                        autoComplete="current-password"
+                        placeholder="••••••••"
+                        style={{
+                          ...inputStyle,
+                          background: '#f8fafc',
+                          border: '2px solid #e2e8f0',
+                          width: '100%',
+                          boxSizing: 'border-box',
+                          marginTop: '8px',
+                          padding: '14px',
+                          paddingRight: '48px',
+                          borderRadius: '12px'
+                        }}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        style={{ position: 'absolute', right: '16px', top: '24px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                      >
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </button>
+                    </div>
                     <div style={{ textAlign: 'right', marginTop: '8px' }}>
                       <button
                         type="button"
@@ -487,16 +498,25 @@ export default function Auth({ onLogin }) {
 
                   <div>
                     <label style={labelStyle}>Create Password</label>
-                    <input
-                      type="password"
-                      name="new-password"
-                      autoComplete="new-password"
-                      placeholder="Create a strong password"
-                      style={formInputStyle}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        name="new-password"
+                        autoComplete="new-password"
+                        placeholder="Create a strong password"
+                        style={{...formInputStyle, paddingRight: '48px'}}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        style={{ position: 'absolute', right: '16px', top: '16px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                      >
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </button>
+                    </div>
                   </div>
 
                   <button type="submit" className="btn-primary" style={btnStyle}>
