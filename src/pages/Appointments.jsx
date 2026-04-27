@@ -137,7 +137,7 @@ export default function AppointmentsAndDoctors() {
           <h1 style={{ fontSize: '1.8rem', fontWeight: '800', margin: 0 }}>Appointments & Roster</h1>
           <p style={{ color: 'var(--text-muted)', margin: '4px 0 0 0' }}>{userRole === 'Doctor' ? 'Your personal schedule and patient directory.' : 'Manage hospital appointments and doctor roster.'}</p>
         </div>
-        {(userRole === 'Admin' || userRole === 'Receptionist') && (
+        {(userRole === 'Receptionist' || userRole === 'Patient') && (
           <button onClick={() => setShowApptForm(!showApptForm)} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Plus size={20} /> Book New Appointment
           </button>
