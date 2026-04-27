@@ -1,20 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Users, 
-  Calendar, 
-  Receipt, 
-  Package, 
-  FileText, 
-  LogOut, 
-  Moon, 
-  Sun,
-  Stethoscope,
-  ChevronLeft,
-  ChevronRight,
-  UserCircle
-} from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, Receipt, Package, FileText, LogOut, Stethoscope } from 'lucide-react';
+
 import Dashboard from './pages/Dashboard';
 import Patients from './pages/Patients';
 import Appointments from './pages/Appointments';
@@ -26,9 +13,20 @@ import DoctorDashboard from './pages/DoctorDashboard';
 import PatientDashboard from './pages/PatientDashboard';
 import Prescriptions from './pages/Prescriptions';
 
-function Sidebar({ userRole }) {
+function App() {
+  const token = localStorage.getItem('token');
+  const userRole = localStorage.getItem('userRole') || 'Receptionist';
+  const userName = localStorage.getItem('userName') || 'User';
   const location = useLocation();
-  const [collapsed, setCollapsed] = React.useState(false);
+
+  if (!token) {
+    return (
+      <Routes>
+        <Route path="/auth" element={<Auth />} />
+        <Route path="*" element={<Navigate to="/auth" />} />
+      </Routes>
+    );
+  }
 
   const navItems = [
     { path: '/', label: 'Dashboard', icon: <LayoutDashboard size={20} />, roles: ['Admin', 'Receptionist', 'Doctor', 'Patient'] },
@@ -43,52 +41,35 @@ function Sidebar({ userRole }) {
   const filteredNav = navItems.filter(item => item.roles.includes(userRole));
 
   return (
-    <div style={{ width: collapsed ? '80px' : '260px', background: 'var(--sidebar-bg)', height: '100vh', borderRight: '1px solid var(--border-color)', position: 'sticky', top: 0, transition: '0.3s' }}>
-      <div style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div style={{ background: 'var(--primary-color)', padding: '8px', borderRadius: '12px' }}><Stethoscope color="white" size={24} /></div>
-        {!collapsed && <span style={{ fontWeight: '800', fontSize: '1.2rem' }}>MediCarePro</span>}
-      </div>
-      <div style={{ flex: 1, padding: '12px' }}>
-        {filteredNav.map(item => (
-          <Link key={item.path} to={item.path} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', textDecoration: 'none', color: location.pathname === item.path ? 'var(--primary-color)' : 'var(--text-muted)', background: location.pathname === item.path ? 'rgba(79, 70, 229, 0.08)' : 'transparent', borderRadius: '12px', marginBottom: '4px', fontWeight: location.pathname === item.path ? '700' : '500' }}>
-            {item.icon} {!collapsed && <span>{item.label}</span>}
-          </Link>
-        ))}
-      </div>
-      <div style={{ padding: '20px', borderTop: '1px solid var(--border-color)' }}>
-        <button onClick={() => { localStorage.clear(); window.location.href='/auth'; }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: '600' }}>
-          <LogOut size={20} /> {!collapsed && <span>Logout</span>}
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
+      {/* Basic Sidebar */}
+      <div style={{ width: '250px', background: 'white', borderRight: '1px solid #e2e8f0', padding: '20px', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '30px', padding: '0 10px' }}>
+          <Stethoscope color="#4f46e5" size={28} />
+          <span style={{ fontWeight: '800', fontSize: '1.2rem', color: '#1e293b' }}>MediCarePro</span>
+        </div>
+        
+        <div style={{ flex: 1 }}>
+          {filteredNav.map(item => (
+            <Link key={item.path} to={item.path} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 15px', textDecoration: 'none', color: location.pathname === item.path ? '#4f46e5' : '#64748b', background: location.pathname === item.path ? '#f1f5f9' : 'transparent', borderRadius: '10px', marginBottom: '5px', fontWeight: '600' }}>
+              {item.icon} <span>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+
+        <button onClick={() => { localStorage.clear(); window.location.href='/auth'; }} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 15px', border: 'none', background: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: '700', marginTop: '20px' }}>
+          <LogOut size={20} /> Logout
         </button>
       </div>
-    </div>
-  );
-}
 
-function App() {
-  const token = localStorage.getItem('token');
-  const userRole = localStorage.getItem('userRole') || 'Admin';
-  const userName = localStorage.getItem('userName') || 'User';
-
-  if (!token) {
-    return (
-      <Routes>
-        <Route path="/auth" element={<Auth />} />
-        <Route path="*" element={<Navigate to="/auth" />} />
-      </Routes>
-    );
-  }
-
-  return (
-    <div style={{ display: 'flex', background: 'var(--bg-color)', minHeight: '100vh' }}>
-      <Sidebar userRole={userRole} />
-      <div style={{ flex: 1, padding: '32px' }}>
-        {/* Simple Top Bar */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '32px', alignItems: 'center', gap: '16px' }}>
+      {/* Main Content */}
+      <div style={{ flex: 1, padding: '30px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontWeight: '700' }}>{userName}</div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{userRole}</div>
+            <div style={{ fontWeight: '700', color: '#1e293b' }}>{userName}</div>
+            <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{userRole} Portal</div>
           </div>
-          <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--gradient-bg-1)', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800' }}>{userName.charAt(0)}</div>
+          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#4f46e5', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{userName.charAt(0)}</div>
         </div>
 
         <Routes>
