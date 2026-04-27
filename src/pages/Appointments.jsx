@@ -294,7 +294,7 @@ export default function Appointments() {
                     Cancel Transaction
                   </button>
                   <button onClick={finalizePayment} style={{ flex: 1, padding: '14px', borderRadius: '10px', border: 'none', background: '#10b981', color: 'white', fontWeight: '700', cursor: 'pointer' }}>
-                    Confirm Payment (Simulator)
+                    Confirm Payment
                   </button>
                 </div>
               </div>
