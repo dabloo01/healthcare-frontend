@@ -22,10 +22,12 @@ export default function DoctorDashboard() {
       const res = await fetch(`${apiUrl}/api/appointments`);
       const data = await res.json();
       
-      // Filter appointments for this doctor
-      // In a real system we'd match by doctorId, here we match by doctor name or email if possible
-      // Let's assume the seeded data has doctor info
-      const docAppts = data.filter(a => a.doctor?.email === doctorEmail || a.doctor?.name?.includes(doctorName));
+      // Filter appointments for this specific doctor
+      const docAppts = data.filter(a => {
+        const docEmailMatch = a.doctor?.email && a.doctor.email.toLowerCase() === doctorEmail.toLowerCase();
+        const docNameMatch = a.doctor?.name && a.doctor.name.toLowerCase().includes(doctorName.toLowerCase().replace('dr.', '').trim());
+        return docEmailMatch || docNameMatch;
+      });
       
       setAppointments(docAppts);
       setStats({
