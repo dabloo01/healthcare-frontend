@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Beaker, Plus, ExternalLink, FileText, Search, Clock } from 'lucide-react';
+import { Beaker, Plus, ExternalLink, FileText, Search, Clock, X, FileCheck } from 'lucide-react';
 
 export default function LabReports() {
   const [reports, setReports] = useState([]);
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [selectedReport, setSelectedReport] = useState(null); // For View Modal
   const [userRole, setUserRole] = useState(localStorage.getItem('userRole') || 'Patient');
   const [userEmail, setUserEmail] = useState(localStorage.getItem('userEmail') || '');
 
@@ -69,7 +70,7 @@ export default function LabReports() {
             {userRole === 'Patient' ? 'Access your medical test results and diagnostic data.' : 'Manage and upload patient diagnostic lab results.'}
           </p>
         </div>
-        {(userRole === 'Admin' || userRole === 'Receptionist') && (
+        {(userRole.includes('Admin') || userRole === 'Receptionist') && (
           <button 
             onClick={() => setShowForm(!showForm)} 
             className="btn-primary" 
@@ -168,7 +169,10 @@ export default function LabReports() {
                   </span>
                 </td>
                 <td style={{ padding: '16px' }}>
-                  <button style={{ background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '600' }}>
+                  <button 
+                    onClick={() => setSelectedReport(report)}
+                    style={{ background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '600' }}
+                  >
                     View <ExternalLink size={14} />
                   </button>
                 </td>
@@ -177,6 +181,46 @@ export default function LabReports() {
           </tbody>
         </table>
       </div>
+
+      {/* Report View Modal */}
+      {selectedReport && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '500px', padding: '32px', background: 'white', position: 'relative' }}>
+            <button onClick={() => setSelectedReport(null)} style={{ position: 'absolute', right: '20px', top: '20px', background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
+            
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <div style={{ width: '60px', height: '60px', background: 'var(--gradient-bg-1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <FileCheck size={32} color="var(--primary-color)" />
+              </div>
+              <h2 style={{ margin: 0 }}>Lab Report Detail</h2>
+              <p style={{ color: 'var(--text-muted)' }}>Official Diagnostic Result</p>
+            </div>
+
+            <div style={{ background: 'var(--bg-color)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Patient Name:</span>
+                <span style={{ fontWeight: '700' }}>{selectedReport.patient?.name}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Test Name:</span>
+                <span style={{ fontWeight: '700', color: 'var(--primary-color)' }}>{selectedReport.testName}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Date:</span>
+                <span>{new Date(selectedReport.date).toLocaleDateString('en-GB')}</span>
+              </div>
+              <div style={{ marginTop: '16px' }}>
+                <div style={{ color: 'var(--text-muted)', marginBottom: '8px', fontSize: '0.9rem' }}>Detailed Findings:</div>
+                <div style={{ background: 'white', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.95rem', lineHeight: '1.6' }}>
+                  {selectedReport.result}
+                </div>
+              </div>
+            </div>
+
+            <button onClick={() => setSelectedReport(null)} className="btn-primary" style={{ width: '100%', padding: '12px' }}>Close Report</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
