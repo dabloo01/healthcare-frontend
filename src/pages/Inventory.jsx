@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Plus, AlertTriangle, RefreshCw, Trash2, Search } from 'lucide-react';
+import { Package, Plus, AlertTriangle, RefreshCw, Trash2, Search, Edit3 } from 'lucide-react';
 
 export default function Inventory() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  
+  const userRole = localStorage.getItem('userRole');
+
   const [form, setForm] = useState({
     itemName: '',
     category: 'Medicine',
@@ -33,20 +37,47 @@ export default function Inventory() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const url = (import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/inventory' + (editingId ? `/${editingId}` : '');
+    const method = editingId ? 'PUT' : 'POST';
+
     try {
-      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/inventory', {
-        method: 'POST',
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
       });
       if (res.ok) {
         setShowForm(false);
+        setEditingId(null);
         fetchInventory();
         setForm({ itemName: '', category: 'Medicine', stock: 0, unit: 'Tabs', expiryDate: '', price: 0 });
       }
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this item?")) return;
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/inventory/${id}`, { method: 'DELETE' });
+      fetchInventory();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleEdit = (item) => {
+    setEditingId(item.id);
+    setForm({
+      itemName: item.itemName,
+      category: item.category,
+      stock: item.stock,
+      unit: item.unit,
+      expiryDate: item.expiryDate ? item.expiryDate.split('T')[0] : '',
+      price: item.price
+    });
+    setShowForm(true);
   };
 
   const filteredItems = items.filter(item => 
@@ -67,84 +98,52 @@ export default function Inventory() {
           <h1 style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--text-main)', margin: 0 }}>Inventory & Pharmacy</h1>
           <p style={{ color: 'var(--text-muted)', margin: '4px 0 0 0' }}>Manage hospital supplies and medicine stock levels.</p>
         </div>
-        <button 
-          onClick={() => setShowForm(!showForm)} 
-          className="btn-primary" 
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-        >
-          <Plus size={20} /> Add New Item
-        </button>
+        {(userRole === 'Admin' || userRole === 'Hospital Admin') && (
+          <button 
+            onClick={() => { setShowForm(!showForm); setEditingId(null); setForm({ itemName: '', category: 'Medicine', stock: 0, unit: 'Tabs', expiryDate: '', price: 0 }); }} 
+            className="btn-primary" 
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <Plus size={20} /> Add New Item
+          </button>
+        )}
       </div>
 
       {showForm && (
         <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px', border: '1px solid var(--primary-color)' }}>
-          <h3 style={{ margin: '0 0 20px 0' }}>Register New Inventory Item</h3>
+          <h3 style={{ margin: '0 0 20px 0' }}>{editingId ? 'Edit Inventory Item' : 'Register New Inventory Item'}</h3>
           <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: '600' }}>Item Name</label>
-              <input 
-                type="text" 
-                required 
-                placeholder="Paracetamol 500mg" 
-                value={form.itemName} 
-                onChange={e => setForm({...form, itemName: e.target.value})} 
-                className="form-input" 
-              />
+              <label style={labelStyle}>Item Name</label>
+              <input type="text" required value={form.itemName} onChange={e => setForm({...form, itemName: e.target.value})} className="form-input" />
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: '600' }}>Category</label>
-              <select 
-                value={form.category} 
-                onChange={e => setForm({...form, category: e.target.value})} 
-                className="form-input"
-              >
+              <label style={labelStyle}>Category</label>
+              <select value={form.category} onChange={e => setForm({...form, category: e.target.value})} className="form-input">
                 <option value="Medicine">Medicine</option>
                 <option value="Equipment">Equipment</option>
                 <option value="Consumable">Consumable</option>
               </select>
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: '600' }}>Current Stock</label>
-              <input 
-                type="number" 
-                required 
-                value={form.stock} 
-                onChange={e => setForm({...form, stock: parseInt(e.target.value)})} 
-                className="form-input" 
-              />
+              <label style={labelStyle}>Current Stock</label>
+              <input type="number" required value={form.stock} onChange={e => setForm({...form, stock: parseInt(e.target.value)})} className="form-input" />
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: '600' }}>Unit</label>
-              <input 
-                type="text" 
-                placeholder="Tabs / Bottles" 
-                value={form.unit} 
-                onChange={e => setForm({...form, unit: e.target.value})} 
-                className="form-input" 
-              />
+              <label style={labelStyle}>Unit</label>
+              <input type="text" value={form.unit} onChange={e => setForm({...form, unit: e.target.value})} className="form-input" />
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: '600' }}>Price (per unit)</label>
-              <input 
-                type="number" 
-                required 
-                value={form.price} 
-                onChange={e => setForm({...form, price: parseFloat(e.target.value)})} 
-                className="form-input" 
-              />
+              <label style={labelStyle}>Price (per unit)</label>
+              <input type="number" required value={form.price} onChange={e => setForm({...form, price: parseFloat(e.target.value)})} className="form-input" />
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: '600' }}>Expiry Date</label>
-              <input 
-                type="date" 
-                value={form.expiryDate} 
-                onChange={e => setForm({...form, expiryDate: e.target.value})} 
-                className="form-input" 
-              />
+              <label style={labelStyle}>Expiry Date</label>
+              <input type="date" value={form.expiryDate} onChange={e => setForm({...form, expiryDate: e.target.value})} className="form-input" />
             </div>
             <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '12px', marginTop: '10px' }}>
-              <button type="submit" className="btn-primary" style={{ flex: 1 }}>Save Item</button>
-              <button type="button" onClick={() => setShowForm(false)} style={{ flex: 1, background: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '12px', cursor: 'pointer' }}>Cancel</button>
+              <button type="submit" className="btn-primary" style={{ flex: 1 }}>{editingId ? 'Update Item' : 'Save Item'}</button>
+              <button type="button" onClick={() => { setShowForm(false); setEditingId(null); }} style={{ flex: 1, background: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '12px', cursor: 'pointer' }}>Cancel</button>
             </div>
           </form>
         </div>
@@ -171,12 +170,12 @@ export default function Inventory() {
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ background: 'rgba(0,0,0,0.02)', borderBottom: '1px solid var(--border-color)' }}>
-                <th style={{ padding: '16px', color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase' }}>Item Details</th>
-                <th style={{ padding: '16px', color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase' }}>Category</th>
-                <th style={{ padding: '16px', color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase' }}>Price</th>
-                <th style={{ padding: '16px', color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase' }}>Stock Level</th>
-                <th style={{ padding: '16px', color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase' }}>Status</th>
-                <th style={{ padding: '16px', color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase' }}>Expiry</th>
+                <th style={thStyle}>Item Details</th>
+                <th style={thStyle}>Category</th>
+                <th style={thStyle}>Price</th>
+                <th style={thStyle}>Stock</th>
+                <th style={thStyle}>Status</th>
+                <th style={thStyle}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -188,28 +187,24 @@ export default function Inventory() {
                 const status = getStockStatus(item.stock);
                 return (
                   <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background 0.2s' }}>
-                    <td style={{ padding: '16px' }}>
+                    <td style={tdStyle}>
                       <div style={{ fontWeight: '600' }}>{item.itemName}</div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>ID: INV-{item.id + 100}</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>ID: INV-{item.id}</div>
                     </td>
-                    <td style={{ padding: '16px' }}>
-                      <span style={{ fontSize: '0.85rem', padding: '4px 10px', borderRadius: '20px', background: 'var(--gradient-bg-1)', color: 'var(--primary-color)' }}>
-                        {item.category}
-                      </span>
+                    <td style={tdStyle}>
+                      <span style={{ fontSize: '0.85rem', padding: '4px 10px', borderRadius: '20px', background: 'var(--gradient-bg-1)', color: 'var(--primary-color)' }}>{item.category}</span>
                     </td>
-                    <td style={{ padding: '16px', fontWeight: '600' }}>₹{item.price}</td>
-                    <td style={{ padding: '16px' }}>
-                      <div style={{ fontSize: '1rem', fontWeight: '700' }}>{item.stock} <span style={{ fontSize: '0.8rem', fontWeight: '400', color: 'var(--text-muted)' }}>{item.unit}</span></div>
+                    <td style={{ ...tdStyle, fontWeight: '600' }}>₹{item.price}</td>
+                    <td style={tdStyle}>{item.stock} {item.unit}</td>
+                    <td style={tdStyle}>
+                      <span style={{ padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700', background: status.bg, color: status.color }}>{status.label}</span>
                     </td>
-                    <td style={{ padding: '16px' }}>
-                      <span style={{ fontSize: '0.75rem', fontWeight: '700', padding: '4px 12px', borderRadius: '20px', background: status.bg, color: status.color }}>
-                        {status.label}
-                      </span>
-                    </td>
-                    <td style={{ padding: '16px', color: item.expiryDate && new Date(item.expiryDate) < new Date() ? '#ef4444' : 'var(--text-main)' }}>
-                      {item.expiryDate ? new Date(item.expiryDate).toLocaleDateString('en-GB') : '-'}
-                      {item.expiryDate && new Date(item.expiryDate) < new Date() && (
-                        <div style={{ fontSize: '0.7rem', fontWeight: '700' }}>EXPIRED</div>
+                    <td style={tdStyle}>
+                      {(userRole === 'Admin' || userRole === 'Hospital Admin') && (
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button onClick={() => handleEdit(item)} style={{ background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer' }}><Edit3 size={18} /></button>
+                          <button onClick={() => handleDelete(item.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}><Trash2 size={18} /></button>
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -222,3 +217,7 @@ export default function Inventory() {
     </div>
   );
 }
+
+const labelStyle = { display: 'block', marginBottom: '8px', fontSize: '0.9rem', fontWeight: '600' };
+const thStyle = { padding: '16px', color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase' };
+const tdStyle = { padding: '16px' };
