@@ -107,8 +107,8 @@ function App() {
               </div>
 
               <nav style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '4px' }}>
-                {/* Admin & Receptionist Nav */}
-                {(userRole === 'Admin' || userRole === 'Hospital Admin' || userRole === 'Receptionist') && (
+                {/* Admin Nav */}
+                {(userRole === 'Admin' || userRole === 'Hospital Admin') && (
                   <>
                     <NavItem to="/" icon={LayoutDashboard} label="Admin Dashboard" />
                     <NavItem to="/patients" icon={Users} label="Patients" />
@@ -116,6 +116,16 @@ function App() {
                     <NavItem to="/billing" icon={Receipt} label="Billing" />
                     <NavItem to="/inventory" icon={Package} label="Inventory" />
                     <NavItem to="/lab-reports" icon={Beaker} label="Lab Reports" />
+                  </>
+                )}
+
+                {/* Receptionist Nav */}
+                {userRole === 'Receptionist' && (
+                  <>
+                    <NavItem to="/" icon={LayoutDashboard} label="Receptionist Dashboard" />
+                    <NavItem to="/patients" icon={Users} label="Patients" />
+                    <NavItem to="/appointments" icon={Calendar} label="Appointments" />
+                    <NavItem to="/billing" icon={Receipt} label="Billing" />
                   </>
                 )}
 
