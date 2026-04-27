@@ -237,6 +237,18 @@ function App() {
               </div>
 
               {showProfile && (
+                <>
+                  <div
+                    style={{
+                      position: 'fixed',
+                      top: 0,
+                      left: 0,
+                      width: '100vw',
+                      height: '100vh',
+                      zIndex: 999
+                    }}
+                    onClick={() => setShowProfile(false)}
+                  />
                   <div
                     className="glass-panel"
                     style={{
@@ -246,7 +258,7 @@ function App() {
                       width: '280px',
                       padding: '24px',
                       zIndex: 1000,
-                      background: 'var(--card-bg)',
+                      background: darkMode ? '#1e293b' : '#ffffff',
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '16px',
@@ -335,7 +347,8 @@ function App() {
                   >
                     <LogOut size={18} /> Secure Logout
                   </button>
-                </div>
+                  </div>
+                </>
               )}
             </div>
           </div>
