@@ -236,6 +236,8 @@ export default function Dashboard() {
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const userRole = localStorage.getItem('userRole') || 'Receptionist';
+
   const loadUpcomingAppointments = () => {
     fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/appointments')
       .then((res) => res.json())
