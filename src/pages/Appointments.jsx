@@ -62,6 +62,21 @@ export default function Appointments() {
     setLoading(false);
   };
 
+  const handleNameChange = (e) => {
+    const val = e.target.value.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    setApptForm({ ...apptForm, patientName: val });
+  };
+
+  const handlePhoneChange = (e) => {
+    const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+    setApptForm({ ...apptForm, phone: val });
+  };
+
+  const handleAgeChange = (e) => {
+    const val = e.target.value.replace(/\D/g, '').slice(0, 3);
+    setApptForm({ ...apptForm, age: val });
+  };
+
   const handleBookClick = (e) => {
     e.preventDefault();
     if (!apptForm.doctorId || !apptForm.patientName || !apptForm.appointmentTime) return alert("Please fill all fields.");
@@ -128,20 +143,20 @@ export default function Appointments() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
               <div>
                 <label style={labelStyle}>Patient Name:</label>
-                <input required placeholder="Patient Name" value={apptForm.patientName} onChange={e => setApptForm({...apptForm, patientName: e.target.value})} className="form-input" />
+                <input required placeholder="Patient Name" value={apptForm.patientName} onChange={handleNameChange} className="form-input" />
               </div>
               <div>
                 <label style={labelStyle}>Phone Number:</label>
-                <input placeholder="Phone Number (10 Digits)" value={apptForm.phone} onChange={e => setApptForm({...apptForm, phone: e.target.value})} className="form-input" />
+                <input required type="tel" placeholder="Phone Number (10 Digits)" value={apptForm.phone} onChange={handlePhoneChange} className="form-input" />
               </div>
               <div>
                 <label style={labelStyle}>Email Address:</label>
-                <input placeholder="Email Address" value={apptForm.email} onChange={e => setApptForm({...apptForm, email: e.target.value})} className="form-input" />
+                <input required type="email" placeholder="Email Address" value={apptForm.email} onChange={e => setApptForm({...apptForm, email: e.target.value})} className="form-input" />
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <div style={{ flex: 1 }}>
                   <label style={labelStyle}>Age:</label>
-                  <input placeholder="Age" type="number" value={apptForm.age} onChange={e => setApptForm({...apptForm, age: e.target.value})} className="form-input" />
+                  <input required placeholder="Age" type="text" value={apptForm.age} onChange={handleAgeChange} className="form-input" />
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={labelStyle}>Gender:</label>
