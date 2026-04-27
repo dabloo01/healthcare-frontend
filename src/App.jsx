@@ -108,7 +108,7 @@ function App() {
 
               <nav style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: '4px' }}>
                 {/* Admin & Receptionist Nav */}
-                {(userRole === 'Admin' || userRole === 'Receptionist') && (
+                {(userRole === 'Admin' || userRole === 'Hospital Admin' || userRole === 'Receptionist') && (
                   <>
                     <NavItem to="/" icon={LayoutDashboard} label="Admin Dashboard" />
                     <NavItem to="/patients" icon={Users} label="Patients" />
@@ -120,7 +120,7 @@ function App() {
                 )}
 
                 {/* Doctor Nav */}
-                {userRole === 'Doctor' && (
+                {(userRole === 'Doctor' || userRole === 'Head Doctor') && (
                   <>
                     <NavItem to="/" icon={LayoutDashboard} label="Doctor Dashboard" />
                     <NavItem to="/patients" icon={Users} label="My Patients" />
@@ -159,7 +159,9 @@ function App() {
                     <Menu size={24} />
                   </button>
                   <h2 style={{ fontSize: '1.4rem', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>
-                    {userRole} Portal
+                    {userRole.includes('Admin') ? 'Admin Portal' : 
+                     userRole.includes('Doctor') ? 'Doctor Portal' : 
+                     userRole === 'Receptionist' ? 'Reception Portal' : 'Patient Portal'}
                   </h2>
                 </div>
 
@@ -204,8 +206,8 @@ function App() {
                 <Routes>
                   {/* Dashboard Route changes based on role */}
                   <Route path="/" element={
-                    userRole === 'Admin' || userRole === 'Receptionist' ? <Dashboard /> :
-                    userRole === 'Doctor' ? <DoctorDashboard /> :
+                    userRole === 'Admin' || userRole === 'Hospital Admin' || userRole === 'Receptionist' ? <Dashboard /> :
+                    userRole === 'Doctor' || userRole === 'Head Doctor' ? <DoctorDashboard /> :
                     <PatientDashboard />
                   } />
                   
