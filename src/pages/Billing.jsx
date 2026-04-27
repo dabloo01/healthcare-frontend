@@ -19,7 +19,7 @@ export default function Billing() {
     setLoading(true);
     try {
       const [billsRes, patRes, apptRes] = await Promise.all([
-        fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/bill'),
+        fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/bills'),
         fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/patients'),
         fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/appointments')
       ]);
