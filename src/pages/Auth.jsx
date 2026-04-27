@@ -12,7 +12,7 @@ export default function Auth({ onLogin }) {
   const [otp, setOtp] = useState('');
 
   const [regName, setRegName] = useState('');
-  const [regRole, setRegRole] = useState('Hospital Admin');
+  const [regRole, setRegRole] = useState('Patient');
   const [regEmail, setRegEmail] = useState('');
 
   const [loading, setLoading] = useState(false);
@@ -90,7 +90,7 @@ export default function Auth({ onLogin }) {
         
         saveUserProfile({
           name: googleUser.name,
-          role: 'Hospital Admin',
+          role: 'Patient',
           email: googleUser.email,
           phoneNumber: 'N/A'
         });
@@ -476,9 +476,10 @@ export default function Auth({ onLogin }) {
                         value={regRole}
                         onChange={(e) => setRegRole(e.target.value)}
                       >
-                        <option>Hospital Admin</option>
-                        <option>Head Doctor</option>
-                        <option>Receptionist</option>
+                        <option value="Patient">Patient</option>
+                        <option value="Doctor">Doctor</option>
+                        <option value="Receptionist">Receptionist</option>
+                        <option value="Admin">Admin</option>
                       </select>
                     </div>
                   </div>
