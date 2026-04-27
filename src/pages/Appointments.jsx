@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar as CalIcon, UserCheck, Stethoscope, Banknote, ShieldCheck, Plus, X, CheckCircle2, Loader2, CreditCard } from 'lucide-react';
+import { Calendar as CalIcon, UserCheck, Stethoscope, Banknote, ShieldCheck, Plus, X, CheckCircle2, Loader2, CreditCard, Smartphone, Building2 } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -26,7 +26,7 @@ export default function AppointmentsAndDoctors() {
   const userEmail = localStorage.getItem('userEmail') || '';
   const userName = localStorage.getItem('userName') || '';
 
-  const [paymentState, setPaymentState] = useState({ state: 'none', fee: 0, doctorName: '' });
+  const [paymentState, setPaymentState] = useState({ state: 'none', method: '', message: '', fee: 0, doctorName: '' });
 
   useEffect(() => {
     fetchData();
@@ -68,15 +68,20 @@ export default function AppointmentsAndDoctors() {
     e.preventDefault();
     if (!apptForm.doctorId || !apptForm.patientName || !apptForm.appointmentTime) return alert("Please fill all fields.");
     const doc = doctors.find(d => d.id === parseInt(apptForm.doctorId));
-    setPaymentState({ state: 'paying', fee: doc ? doc.consultationFee : 500, doctorName: doc ? doc.name : 'Specialist' });
+    setPaymentState({ state: 'paying', method: '', message: '', fee: doc ? doc.consultationFee : 500, doctorName: doc ? doc.name : 'Specialist' });
+  };
+
+  const processPayment = async (method) => {
+    setPaymentState(prev => ({...prev, state: 'validating', method}));
+    setTimeout(async () => {
+      await finalizeAppointment();
+    }, 2000);
   };
 
   const finalizeAppointment = async () => {
-    setPaymentState(prev => ({ ...prev, state: 'validating' }));
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       
-      // 1. Find or Create Patient
       let finalPatientId = apptForm.patientId;
       if (!finalPatientId) {
         const pRes = await fetch(`${apiUrl}/api/patients`, {
@@ -94,7 +99,6 @@ export default function AppointmentsAndDoctors() {
         finalPatientId = newPat.id;
       }
 
-      // 2. Create Appointment
       const payload = { 
         patientId: parseInt(finalPatientId), 
         doctorId: parseInt(apptForm.doctorId),
@@ -110,7 +114,6 @@ export default function AppointmentsAndDoctors() {
         body: JSON.stringify(payload)
       });
       
-      // 3. Generate Bill
       await fetch(`${apiUrl}/api/bills`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -122,17 +125,16 @@ export default function AppointmentsAndDoctors() {
         })
       });
 
-      setPaymentState(prev => ({ ...prev, state: 'success' }));
+      setPaymentState(prev => ({...prev, state: 'success', message: 'Appointment Confirmed!'}));
       setTimeout(() => {
-        setPaymentState({ state: 'none', fee: 0, doctorName: '' });
+        setPaymentState({ state: 'none', method: '', message: '', fee: 0, doctorName: '' });
         setShowApptForm(false);
         fetchData();
         setApptForm({ patientId: '', patientName: '', phone: '', email: '', age: '', gender: '', doctorId: '', appointmentDate: new Date(), appointmentTime: '', reason: '' });
       }, 2000);
     } catch (err) {
       console.error(err);
-      alert("Failed to book appointment. Please try again.");
-      setPaymentState({ state: 'none', fee: 0, doctorName: '' });
+      setPaymentState({ state: 'none', method: '', message: '', fee: 0, doctorName: '' });
     }
   };
 
@@ -154,14 +156,13 @@ export default function AppointmentsAndDoctors() {
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', borderBottom: '2px solid var(--border-color)', paddingBottom: '16px' }}>
         <button onClick={() => setActiveTab('appointments')} style={activeTab === 'appointments' ? activeTabStyle : inactiveTabStyle}>
-          <CalIcon size={18} /> {userRole === 'Doctor' ? 'My Schedule' : 'All Appointments'}
+          <CalIcon size={18} /> {userRole === 'Doctor' ? 'My Schedule' : 'Manage Appointments'}
         </button>
         <button onClick={() => setActiveTab('doctors')} style={activeTab === 'doctors' ? activeTabStyle : inactiveTabStyle}>
           <Stethoscope size={18} /> Doctor Directory
         </button>
       </div>
 
-      {/* Table Section */}
       <div className="glass-panel" style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
@@ -191,7 +192,6 @@ export default function AppointmentsAndDoctors() {
         </table>
       </div>
 
-      {/* Booking Form Modal */}
       {showApptForm && (
         <div style={overlayStyle}>
           <div className="glass-panel" style={{ width: '100%', maxWidth: '500px', padding: '32px', background: 'white' }}>
@@ -213,34 +213,62 @@ export default function AppointmentsAndDoctors() {
                 </select>
               </div>
               <input placeholder="Reason for Visit" value={apptForm.reason} onChange={e => setApptForm({...apptForm, reason: e.target.value})} style={inputStyle} />
-              <button type="submit" className="btn-primary" style={{ padding: '14px' }}>Proceed to Payment (₹{doctors.find(d => d.id === parseInt(apptForm.doctorId))?.consultationFee || 500})</button>
+              <button type="submit" className="btn-primary" style={{ padding: '14px' }}>Proceed to Payment</button>
             </form>
           </div>
         </div>
       )}
 
-      {/* Simplified Payment Modal */}
+      {/* Reverted Payment Modal with Old Logic */}
       {paymentState.state !== 'none' && (
         <div style={overlayStyle}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '32px', background: 'white', textAlign: 'center' }}>
-            {paymentState.state === 'paying' ? (
-              <>
-                <CreditCard size={48} color="var(--primary-color)" style={{ marginBottom: '16px' }} />
-                <h3>Secure Payment</h3>
-                <p>Consultation Fee: <b>₹{paymentState.fee}</b></p>
-                <button onClick={finalizeAppointment} className="btn-primary" style={{ width: '100%', marginTop: '20px' }}>Pay & Confirm</button>
-              </>
-            ) : paymentState.state === 'validating' ? (
-              <>
-                <Loader2 size={48} className="spin" color="var(--primary-color)" style={{ marginBottom: '16px' }} />
-                <h3>Processing Payment...</h3>
-              </>
-            ) : (
-              <>
-                <CheckCircle2 size={48} color="#10b981" style={{ marginBottom: '16px' }} />
-                <h3 style={{ color: '#10b981' }}>Success!</h3>
-                <p>Appointment Booked Successfully.</p>
-              </>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '550px', padding: '32px', background: 'white' }}>
+            {paymentState.state === 'paying' && (
+              <div style={{ width: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', marginBottom: '24px' }}>
+                  <h2 style={{ fontSize: '1.2rem', margin: 0 }}>Select Payment Method</h2>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>Total Payable</p>
+                    <p style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--primary-color)', margin: 0 }}>₹{paymentState.fee}</p>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '24px' }}>
+                  {[
+                    { id: 'upi', icon: <Smartphone />, label: 'UPI (GPay, PhonePe)' },
+                    { id: 'card', icon: <CreditCard />, label: 'Credit/Debit Card' },
+                    { id: 'net', icon: <Building2 />, label: 'Net Banking' },
+                    { id: 'cash', icon: <Banknote />, label: 'Counter Cash' }
+                  ].map(method => (
+                    <button key={method.id} onClick={() => processPayment(method.label)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '20px', borderRadius: '16px', border: '2px solid var(--border-color)', background: 'none', cursor: 'pointer', transition: '0.2s' }}>
+                      <div style={{ color: 'var(--primary-color)' }}>{method.icon}</div>
+                      <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{method.label}</div>
+                    </button>
+                  ))}
+                </div>
+                <button onClick={() => setPaymentState({ ...paymentState, state: 'none' })} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'none', cursor: 'pointer' }}>Cancel</button>
+              </div>
+            )}
+
+            {paymentState.state === 'validating' && (
+              <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                <Loader2 size={48} className="spin" color="var(--primary-color)" style={{ marginBottom: '20px' }} />
+                <h3>Verifying {paymentState.method}...</h3>
+                <p style={{ color: 'var(--text-muted)' }}>Please do not refresh or close this window.</p>
+              </div>
+            )}
+
+            {paymentState.state === 'success' && (
+              <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#d1fae5', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+                  <ShieldCheck size={48} />
+                </div>
+                <h2 style={{ color: '#065f46', marginBottom: '8px' }}>Payment Successful!</h2>
+                <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Your appointment with Dr. {paymentState.doctorName} is confirmed.</p>
+                <div style={{ padding: '16px', borderRadius: '12px', background: 'var(--bg-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--primary-color)', fontWeight: '700' }}>
+                  <CheckCircle2 size={20} /> Booking ID: APT-{Math.floor(Math.random()*9000)+1000}
+                </div>
+              </div>
             )}
           </div>
         </div>
