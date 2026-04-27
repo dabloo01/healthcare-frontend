@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Calendar, Receipt, LogOut, Moon, Sun, Headset, Stethoscope } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, Receipt, LogOut, Moon, Sun, Headset, Stethoscope, Menu, X } from 'lucide-react';
 import './index.css';
 
 import Dashboard from './pages/Dashboard';
@@ -17,6 +17,7 @@ function App() {
   });
   const [darkMode, setDarkMode] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const safeValue = (value, fallback) => {
     if (
@@ -75,28 +76,16 @@ function App() {
 
   return (
     <Router>
-      <div
-        className="app-container"
-        style={{
-          display: 'flex',
-          minHeight: '100vh',
-          background: 'var(--main-bg)'
-        }}
-      >
-        <aside
-          className="sidebar"
-          style={{
-            width: '260px',
-            height: '100vh',
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            overflow: 'hidden',
-            zIndex: 1000,
-            display: 'flex',
-            flexDirection: 'column'
-          }}
-        >
+      <div className="app-container" style={{ background: 'var(--main-bg)' }}>
+        {/* Mobile Overlay */}
+        {sidebarOpen && (
+          <div 
+            className="sidebar-overlay" 
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+        
+        <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
           <div className="sidebar-logo">
             <Stethoscope size={32} color="#818cf8" strokeWidth={2.5} />
             <span>
@@ -105,19 +94,19 @@ function App() {
           </div>
 
           <nav style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-            <NavLink to="/" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
+            <NavLink to="/" onClick={() => setSidebarOpen(false)} className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
               <LayoutDashboard size={20} /> Dashboard
             </NavLink>
 
-            <NavLink to="/patients" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
+            <NavLink to="/patients" onClick={() => setSidebarOpen(false)} className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
               <Users size={20} /> Patients
             </NavLink>
 
-            <NavLink to="/appointments" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
+            <NavLink to="/appointments" onClick={() => setSidebarOpen(false)} className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
               <Calendar size={20} /> Appointments
             </NavLink>
 
-            <NavLink to="/billing" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
+            <NavLink to="/billing" onClick={() => setSidebarOpen(false)} className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
               <Receipt size={20} /> Billing
             </NavLink>
           </nav>
@@ -172,33 +161,15 @@ function App() {
           </div>
         </aside>
 
-        <main
-          className="main-content"
-          style={{
-            marginLeft: '260px',
-            width: 'calc(100% - 260px)',
-            minHeight: '100vh',
-            height: '100vh',
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
-            padding: 0
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              alignItems: 'center',
-              gap: '24px',
-              padding: '12px 40px',
-              borderBottom: '1px solid var(--border-color)',
-              background: darkMode ? '#1e293b' : '#ffffff',
-              position: 'sticky',
-              top: 0,
-              zIndex: 500
-            }}
-          >
+        <main className="main-content">
+          <div className="top-header">
+            {/* Hamburger Menu for Mobile */}
+            <button 
+              className="hamburger-btn"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu size={24} />
+            </button>
             <button
               onClick={() => window.dispatchEvent(new CustomEvent('toggle-help-bot'))}
               title="AI Support Chat"
@@ -218,7 +189,7 @@ function App() {
               }}
             >
               <Headset size={20} />
-              <span style={{ fontSize: '0.95rem' }}>Help / Support</span>
+              <span className="hide-on-mobile" style={{ fontSize: '0.95rem' }}>Help / Support</span>
             </button>
 
             <div style={{ position: 'relative' }}>
@@ -237,7 +208,7 @@ function App() {
                   boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
                 }}
               >
-                <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column' }}>
+                <div className="hide-on-mobile" style={{ textAlign: 'right', display: 'flex', flexDirection: 'column' }}>
                   <span style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--text-main)' }}>
                     {userName}
                   </span>
@@ -368,14 +339,7 @@ function App() {
             </div>
           </div>
 
-          <div
-            style={{
-              padding: '32px',
-              overflowY: 'auto',
-              flex: 1,
-              minHeight: 0
-            }}
-          >
+          <div className="page-content">
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/patients" element={<Patients />} />

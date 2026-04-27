@@ -423,8 +423,8 @@ export default function AppointmentsAndDoctors() {
             </form>
           )}
 
-          <div className="glass-panel" style={{ overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <div className="glass-panel" style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
               <thead>
                 <tr style={{ background: 'var(--sidebar-bg)', borderBottom: '1px solid var(--border-color)' }}>
                   <th style={thStyle}>Date & Time</th>
@@ -490,8 +490,8 @@ export default function AppointmentsAndDoctors() {
             </form>
           )}
 
-          <div className="glass-panel" style={{ overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <div className="glass-panel" style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
               <thead>
                 <tr style={{ background: 'var(--sidebar-bg)', borderBottom: '1px solid var(--border-color)' }}>
                   <th style={thStyle}>Doctor Name</th>
