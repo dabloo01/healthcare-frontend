@@ -19,9 +19,9 @@ export default function Billing() {
     setLoading(true);
     try {
       const [billsRes, patRes, apptRes] = await Promise.all([
-        fetch('http://localhost:5000/api/bills'),
-        fetch('http://localhost:5000/api/patients'),
-        fetch('http://localhost:5000/api/appointments')
+        fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/bills'),
+        fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/patients'),
+        fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/appointments')
       ]);
       setBills(await billsRes.json());
       setPatients(await patRes.json());
@@ -46,7 +46,7 @@ export default function Billing() {
       let finalPatientId = form.patientId;
       if (!finalPatientId) {
         // Create patient inline if missing
-        const newPatRes = await fetch('http://localhost:5000/api/patients', {
+        const newPatRes = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/patients', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: form.patientName, phone: 'N/A' })
@@ -61,7 +61,7 @@ export default function Billing() {
         description: form.description,
         status: 'Unpaid'
       };
-      const res = await fetch('http://localhost:5000/api/bills', {
+      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/bills', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

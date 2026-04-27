@@ -38,9 +38,9 @@ export default function AppointmentsAndDoctors() {
     setLoading(true);
     try {
       const [apptcRes, patRes, docRes] = await Promise.all([
-        fetch('http://localhost:5000/api/appointments'),
-        fetch('http://localhost:5000/api/patients'),
-        fetch('http://localhost:5000/api/doctors')
+        fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/appointments'),
+        fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/patients'),
+        fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/doctors')
       ]);
       setAppointments(await apptcRes.json());
       setPatients(await patRes.json());
@@ -102,7 +102,7 @@ export default function AppointmentsAndDoctors() {
       let finalPatientId = apptForm.patientId;
       if (!finalPatientId) {
         // Create patient inline if missing
-        const newPatRes = await fetch('http://localhost:5000/api/patients', {
+        const newPatRes = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/patients', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
@@ -138,7 +138,7 @@ export default function AppointmentsAndDoctors() {
         status: 'Scheduled'
       };
       
-      const apptRes = await fetch('http://localhost:5000/api/appointments', {
+      const apptRes = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -150,7 +150,7 @@ export default function AppointmentsAndDoctors() {
          throw new Error(errorText);
       }
       
-      await fetch('http://localhost:5000/api/bills', {
+      await fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/bills', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -185,7 +185,7 @@ export default function AppointmentsAndDoctors() {
       const payload = Object.assign({}, docForm);
       payload.consultationFee = parseFloat(payload.consultationFee) || 500;
 
-      const res = await fetch('http://localhost:5000/api/doctors', {
+      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/doctors', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
