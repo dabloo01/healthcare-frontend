@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Clock, Stethoscope, Eye, EyeOff } from 'lucide-react';
+import { useGoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode';
 
 export default function Auth({ onLogin }) {
   const [authFlow, setAuthFlow] = useState('login');
@@ -75,9 +77,35 @@ export default function Auth({ onLogin }) {
     }, timeout);
   };
 
-  const handleGoogleLogin = () => {
-    handleTransition(null, 'dashboard', 'Authenticating securely via Google...', 1500);
-  };
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setLoadingMsg('Authenticating with Google...');
+      setLoading(true);
+      try {
+        // Fetch user info using the access token
+        const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+        });
+        const googleUser = await res.json();
+        
+        saveUserProfile({
+          name: googleUser.name,
+          role: 'Hospital Admin',
+          email: googleUser.email,
+          phoneNumber: 'N/A'
+        });
+        
+        setLoading(false);
+        onLogin();
+      } catch (err) {
+        setLoading(false);
+        alert('Google authentication failed.');
+      }
+    },
+    onError: () => {
+      alert('Login Failed');
+    },
+  });
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();

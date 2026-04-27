@@ -19,7 +19,7 @@ export default function Billing() {
     setLoading(true);
     try {
       const [billsRes, patRes, apptRes] = await Promise.all([
-        fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/bills'),
+        fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/bill'),
         fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/patients'),
         fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/appointments')
       ]);
@@ -78,12 +78,12 @@ export default function Billing() {
 
   const handlePrint = (bill) => {
     setPrintBill(bill);
-    document.title = `Invoice_${bill.patient?.name}_${btoa(bill.id).substr(0,6)}`;
-    
+    document.title = `Invoice_${bill.patient?.name}_${btoa(bill.id).substr(0, 6)}`;
+
     // Allow React state to render the invoice div before executing print protocol
     setTimeout(() => {
       window.print();
-      setTimeout(() => { 
+      setTimeout(() => {
         document.title = "Healthcare Management System";
         setPrintBill(null);
       }, 1000);
@@ -92,7 +92,7 @@ export default function Billing() {
 
   // Helper to find latest appointment for a patient to get doctor/reason
   const getLatestAppointment = (patientId) => {
-    const patAppts = appointments.filter(a => a.patientId === patientId).sort((a,b) => new Date(b.appointmentDate) - new Date(a.appointmentDate));
+    const patAppts = appointments.filter(a => a.patientId === patientId).sort((a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate));
     return patAppts.length > 0 ? patAppts[0] : null;
   };
 
@@ -132,7 +132,7 @@ export default function Billing() {
                     <p style={{ margin: '0 0 4px 0', color: '#374151' }}>Age: {printBill.patient?.age ? `${printBill.patient?.age} Yrs` : 'N/A'}</p>
                     <p style={{ margin: '0 0 4px 0', color: '#374151' }}>Gender: {printBill.patient?.gender || 'N/A'}</p>
                   </div>
-                  
+
                   {/* Bill Info */}
                   <div style={{ textAlign: 'right' }}>
                     <h3 style={{ textTransform: 'uppercase', color: '#6b7280', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '8px' }}>Invoice Details</h3>
@@ -200,7 +200,7 @@ export default function Billing() {
                     <div style={{ fontFamily: '"Brush Script MT", cursive', fontSize: '2.5rem', opacity: 0.7, marginBottom: '8px', marginTop: '-50px' }}>
                       MediCare Auth
                     </div>
-                    <b style={{ fontSize: '0.9rem' }}>Authorized Signatory</b><br/>
+                    <b style={{ fontSize: '0.9rem' }}>Authorized Signatory</b><br />
                     <span style={{ color: '#4b5563', fontSize: '0.8rem' }}>Accounts Department</span>
                   </div>
                 </div>
@@ -225,9 +225,9 @@ export default function Billing() {
           <datalist id="billing-patient-list">
             {patients.map(p => <option key={p.id} value={p.name} />)}
           </datalist>
-          <input type="number" required placeholder="Amount (e.g. 500)" value={form.amount} onChange={e => setForm({...form, amount: e.target.value})} style={inputStyle} min="0" step="0.01" />
-          <input type="text" placeholder="Description (e.g. Routine Checkup)" value={form.description} onChange={e => setForm({...form, description: e.target.value})} style={{...inputStyle, flex: 2}} />
-          
+          <input type="number" required placeholder="Amount (e.g. 500)" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} style={inputStyle} min="0" step="0.01" />
+          <input type="text" placeholder="Description (e.g. Routine Checkup)" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} style={{ ...inputStyle, flex: 2 }} />
+
           <button type="submit" className="btn-primary" style={{ height: '42px', marginTop: 'auto' }}>Save Bill</button>
         </form>
       )}
@@ -248,8 +248,8 @@ export default function Billing() {
             {loading ? <tr><td colSpan="6" style={tdStyle}>Loading...</td></tr> : bills.length === 0 ? <tr><td colSpan="6" style={tdStyle}>No bills generated yet.</td></tr> : bills.map(b => (
               <tr key={b.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                 <td style={tdStyle}>
-                  {new Date(b.date).toLocaleDateString('en-GB')}<br/>
-                  <span style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>INV-{1000 + b.id}</span>
+                  {new Date(b.date).toLocaleDateString('en-GB')}<br />
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>INV-{1000 + b.id}</span>
                 </td>
                 <td style={tdStyle}>{b.patient?.name}</td>
                 <td style={tdStyle}>{b.description || '-'}</td>
