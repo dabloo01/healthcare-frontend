@@ -237,21 +237,22 @@ function App() {
               </div>
 
               {showProfile && (
-                <div
-                  className="glass-panel"
-                  style={{
-                    position: 'absolute',
-                    top: 'calc(100% + 10px)',
-                    right: 0,
-                    width: '280px',
-                    padding: '24px',
-                    zIndex: 100,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '16px',
-                    boxShadow: '0 10px 40px rgba(0,0,0,0.1)'
-                  }}
-                >
+                  <div
+                    className="glass-panel"
+                    style={{
+                      position: 'absolute',
+                      top: 'calc(100% + 10px)',
+                      right: 0,
+                      width: '280px',
+                      padding: '24px',
+                      zIndex: 1000,
+                      background: 'var(--card-bg)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '16px',
+                      boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
+                    }}
+                  >
                   <div
                     style={{
                       display: 'flex',

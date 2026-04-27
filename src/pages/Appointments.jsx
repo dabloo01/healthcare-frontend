@@ -365,7 +365,7 @@ export default function AppointmentsAndDoctors() {
               
               <div style={{ flex: '0.6', minWidth: '120px' }}>
                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-main)', marginBottom: '6px' }}>Gender:</label>
-                <select value={apptForm.gender} onChange={e => setApptForm({...apptForm, gender: e.target.value})} style={{...inputStyle, width: '100%', boxSizing: 'border-box'}}>
+                <select value={apptForm.gender} onChange={e => setApptForm({...apptForm, gender: e.target.value})} style={{...inputStyle, width: '100%', boxSizing: 'border-box', height: '42px', appearance: 'auto', padding: '0 16px'}}>
                   <option value="">Gender</option>
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>

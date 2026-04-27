@@ -99,10 +99,10 @@ export default function Auth({ onLogin }) {
       }
 
       saveUserProfile({
-        name: data.name,
-        role: data.role,
-        email: data.email,
-        phoneNumber: data.phone || phone
+        name: data.user.name,
+        role: data.user.role,
+        email: data.user.email,
+        phoneNumber: data.user.phone || phone
       });
 
       onLogin();
