@@ -7,7 +7,8 @@ import {
   TrendingUp,
   Clock,
   AlertCircle,
-  Activity
+  Activity,
+  BedDouble
 } from 'lucide-react';
 
 function SimpleLineChart({ data }) {
@@ -235,6 +236,7 @@ export default function Dashboard() {
   const [recentPatients, setRecentPatients] = useState([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [bedStats, setBedStats] = useState({ total: 0, available: 0, occupied: 0 });
 
   const userRole = localStorage.getItem('userRole') || 'Receptionist';
 
@@ -266,11 +268,14 @@ export default function Dashboard() {
   useEffect(() => {
     Promise.all([
       fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/dashboard').then(res => res.json()),
-      fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/patients').then(res => res.json())
+      fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/patients').then(res => res.json()),
+      fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/beds').then(res => res.json())
     ])
-      .then(([dashboardData, patientsData]) => {
+      .then(([dashboardData, patientsData, bedsData]) => {
         setStats(dashboardData);
         setRecentPatients(patientsData.slice(0, 5));
+        const occupied = bedsData.filter(b => b.status === 'Occupied').length;
+        setBedStats({ total: bedsData.length, available: bedsData.length - occupied, occupied });
       })
       .catch((err) => console.error('Dashboard data fetch error:', err))
       .finally(() => setLoading(false));
@@ -333,15 +338,18 @@ export default function Dashboard() {
     { label: 'Total Patients', value: stats.totalPatients, icon: <Users size={26} strokeWidth={2.5} />, color: 'var(--primary-color)', bg: 'var(--gradient-bg-1)' },
     { label: 'Active Doctors', value: stats.totalDoctors, icon: <UserPlus size={26} strokeWidth={2.5} />, color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
     { label: 'Appointments', value: stats.totalAppointments, icon: <Calendar size={26} strokeWidth={2.5} />, color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' },
-    { label: 'Total Revenue', value: `₹${stats.totalRevenue?.toLocaleString()}`, icon: <Receipt size={26} strokeWidth={2.5} />, color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' }
+    { label: 'Total Revenue', value: `₹${stats.totalRevenue?.toLocaleString()}`, icon: <Receipt size={26} strokeWidth={2.5} />, color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' },
+    { label: 'Available Beds', value: bedStats.available, icon: <BedDouble size={26} strokeWidth={2.5} />, color: '#22c55e', bg: 'rgba(34, 197, 94, 0.1)' },
+    { label: 'Occupied Beds', value: bedStats.occupied, icon: <BedDouble size={26} strokeWidth={2.5} />, color: '#f97316', bg: 'rgba(249, 115, 22, 0.1)' },
   ];
 
-  // Dummy logic for receptionist specific metrics if not in stats
   const receptionistCards = [
     { label: 'Today Appointments', value: stats.totalAppointments > 0 ? Math.ceil(stats.totalAppointments / 5) : 0, icon: <Clock size={26} strokeWidth={2.5} />, color: 'var(--primary-color)', bg: 'var(--gradient-bg-1)' },
     { label: 'Waiting Patients', value: stats.totalAppointments > 0 ? Math.floor(stats.totalAppointments / 10) : 0, icon: <Activity size={26} strokeWidth={2.5} />, color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' },
     { label: 'New Registrations', value: stats.totalPatients > 0 ? Math.ceil(stats.totalPatients / 8) : 0, icon: <UserPlus size={26} strokeWidth={2.5} />, color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
-    { label: 'Pending Bills', value: stats.pendingBillsCount, icon: <Receipt size={26} strokeWidth={2.5} />, color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' }
+    { label: 'Pending Bills', value: stats.pendingBillsCount, icon: <Receipt size={26} strokeWidth={2.5} />, color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' },
+    { label: 'Available Beds', value: bedStats.available, icon: <BedDouble size={26} strokeWidth={2.5} />, color: '#22c55e', bg: 'rgba(34, 197, 94, 0.1)' },
+    { label: 'Occupied Beds', value: bedStats.occupied, icon: <BedDouble size={26} strokeWidth={2.5} />, color: '#f97316', bg: 'rgba(249, 115, 22, 0.1)' },
   ];
 
   const cards = (userRole === 'Admin' || userRole === 'Hospital Admin') ? adminCards : receptionistCards;
