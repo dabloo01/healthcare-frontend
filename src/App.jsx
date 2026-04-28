@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from 'react
 import { 
   LayoutDashboard, Users, Calendar, Receipt, LogOut, 
   Moon, Sun, Headset, Stethoscope, Menu, X, 
-  Package, FileText, Beaker, Clipboard 
+  Package, FileText, Beaker, Clipboard, BedDouble
 } from 'lucide-react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import './index.css';
@@ -20,10 +20,10 @@ import HelpBot from './components/HelpBot';
 import PatientDashboard from './pages/PatientDashboard';
 import DoctorDashboard from './pages/DoctorDashboard';
 
-// New Modules
 import Inventory from './pages/Inventory';
 import Prescriptions from './pages/Prescriptions';
 import LabReports from './pages/LabReports';
+import Beds from './pages/Beds';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -114,6 +114,7 @@ function App() {
                     <NavItem to="/patients" icon={Users} label="Patients" />
                     <NavItem to="/appointments" icon={Calendar} label="Appointments" />
                     <NavItem to="/billing" icon={Receipt} label="Billing" />
+                    <NavItem to="/beds" icon={BedDouble} label="Beds & Wards" />
                     <NavItem to="/inventory" icon={Package} label="Inventory" />
                     <NavItem to="/lab-reports" icon={Beaker} label="Lab Reports" />
                   </>
@@ -126,6 +127,7 @@ function App() {
                     <NavItem to="/patients" icon={Users} label="Patients" />
                     <NavItem to="/appointments" icon={Calendar} label="Appointments" />
                     <NavItem to="/billing" icon={Receipt} label="Billing" />
+                    <NavItem to="/beds" icon={BedDouble} label="Beds & Wards" />
                   </>
                 )}
 
@@ -224,6 +226,7 @@ function App() {
                   <Route path="/patients" element={<Patients />} />
                   <Route path="/appointments" element={<Appointments />} />
                   <Route path="/billing" element={<Billing />} />
+                  <Route path="/beds" element={<Beds />} />
                   <Route path="/inventory" element={<Inventory />} />
                   <Route path="/prescriptions" element={<Prescriptions />} />
                   <Route path="/lab-reports" element={<LabReports />} />
