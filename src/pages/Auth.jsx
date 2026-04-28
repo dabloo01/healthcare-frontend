@@ -183,93 +183,6 @@ export default function Auth({ onLogin }) {
     }
   };
 
-  const handleForgotPhoneSubmit = async (e) => {
-    e.preventDefault();
-    setLoadingMsg('Sending OTP to your number...');
-    setLoading(true);
-
-    try {
-      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone })
-      });
-
-      const data = await res.json();
-      setLoading(false);
-
-      if (!res.ok) {
-        alert(data.error || 'Failed to send OTP');
-        return;
-      }
-      setAuthFlow('forgot_otp');
-    } catch (err) {
-      setLoading(false);
-      alert('Network error connecting to authentication server.');
-    }
-  };
-
-  const handleVerifyOtpSubmit = async (e) => {
-    e.preventDefault();
-    setLoadingMsg('Verifying your OTP...');
-    setLoading(true);
-
-    try {
-      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/auth/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, otp })
-      });
-
-      const data = await res.json();
-      setLoading(false);
-
-      if (!res.ok) {
-        alert(data.error || 'Invalid OTP');
-        return;
-      }
-      setAuthFlow('forgot_reset');
-    } catch (err) {
-      setLoading(false);
-      alert('Network error connecting to authentication server.');
-    }
-  };
-
-  const handleResetPasswordSubmit = async (e) => {
-    e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      alert('Passwords do not match!');
-      return;
-    }
-    setLoadingMsg('Resetting your password...');
-    setLoading(true);
-
-    try {
-      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, otp, newPassword })
-      });
-
-      const data = await res.json();
-      setLoading(false);
-
-      if (!res.ok) {
-        alert(data.error || 'Password reset failed');
-        return;
-      }
-      alert('Password reset successfully! Please login with your new password.');
-      setAuthFlow('login');
-      setPassword('');
-      setOtp('');
-      setNewPassword('');
-      setConfirmPassword('');
-    } catch (err) {
-      setLoading(false);
-      alert('Network error connecting to authentication server.');
-    }
-  };
-
   const renderHeader = () => {
     switch (authFlow) {
       case 'login':
@@ -658,7 +571,14 @@ export default function Auth({ onLogin }) {
 
               {authFlow === 'forgot_phone' && (
                 <form
-                  onSubmit={handleForgotPhoneSubmit}
+                  onSubmit={(e) =>
+                    handleTransition(
+                      e,
+                      'forgot_otp',
+                      'Texting secure OTP to your number...',
+                      1500
+                    )
+                  }
                   style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
                 >
                   <div>
@@ -707,7 +627,9 @@ export default function Auth({ onLogin }) {
 
               {authFlow === 'forgot_otp' && (
                 <form
-                  onSubmit={handleVerifyOtpSubmit}
+                  onSubmit={(e) =>
+                    handleTransition(e, 'forgot_reset', 'Verifying signature...', 1500)
+                  }
                   style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}
                 >
                   <div
@@ -767,7 +689,9 @@ export default function Auth({ onLogin }) {
                     <span style={{ color: 'var(--border-color)' }}>|</span>
                     <button
                       type="button"
-                      onClick={handleForgotPhoneSubmit}
+                      onClick={(e) =>
+                        handleTransition(e, 'forgot_otp', 'Resending...', 1000)
+                      }
                       style={linkBtnStyle}
                     >
                       Resend Code
@@ -778,7 +702,14 @@ export default function Auth({ onLogin }) {
 
               {authFlow === 'forgot_reset' && (
                 <form
-                  onSubmit={handleResetPasswordSubmit}
+                  onSubmit={(e) =>
+                    handleTransition(
+                      e,
+                      'dashboard',
+                      'Resetting password & Logging you in...',
+                      2000
+                    )
+                  }
                   autoComplete="on"
                   style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
                 >
