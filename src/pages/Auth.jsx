@@ -87,14 +87,14 @@ export default function Auth({ onLogin }) {
           headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
         });
         const googleUser = await res.json();
-        
+
         saveUserProfile({
           name: googleUser.name,
           role: 'Patient',
           email: googleUser.email,
           phoneNumber: 'N/A'
         });
-        
+
         setLoading(false);
         onLogin();
       } catch (err) {
@@ -533,7 +533,7 @@ export default function Auth({ onLogin }) {
                         name="new-password"
                         autoComplete="new-password"
                         placeholder="Create a strong password"
-                        style={{...formInputStyle, paddingRight: '48px'}}
+                        style={{ ...formInputStyle, paddingRight: '48px' }}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
