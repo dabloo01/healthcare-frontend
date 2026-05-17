@@ -11,7 +11,7 @@ export default function Landing() {
       {/* Navbar - Two Tier Enterprise Structure (Number 4) */}
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, background: '#fff', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
         {/* Top Info Belt */}
-        <div style={{ background: '#0f172a', color: '#cbd5e1', padding: '10px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem', fontWeight: '600' }}>
+        <div className="landing-top-belt" style={{ background: '#0f172a', color: '#cbd5e1', padding: '10px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem', fontWeight: '600' }}>
           <div style={{ display: 'flex', gap: '24px' }}>
              <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#fff' }}><Phone size={14} /> +1 (800) MED-CARE</span>
              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><LifeBuoy size={14} /> 24/7 Support</span>
@@ -24,13 +24,13 @@ export default function Landing() {
         </div>
         
         {/* Main Navigation Belt */}
-        <nav style={{ padding: '0 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '80px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <nav className="landing-nav" style={{ padding: '0 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '80px' }}>
+          <div className="landing-nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Stethoscope size={36} color="var(--primary-color)" />
             <span style={{ fontSize: '1.9rem', fontWeight: '900', color: '#0f172a', letterSpacing: '-0.5px' }}>MediCare<span style={{ color: 'var(--primary-color)' }}>Pro</span></span>
           </div>
           
-          <div style={{ display: 'flex', gap: '40px', alignItems: 'center' }}>
+          <div className="landing-nav-links" style={{ display: 'flex', gap: '40px', alignItems: 'center' }}>
             <a href="#segments" style={{ color: '#1e293b', textDecoration: 'none', fontWeight: '800', fontSize: '1.05rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.target.style.color = 'var(--primary-color)'} onMouseOut={(e) => e.target.style.color = '#1e293b'}>Solutions</a>
             <a href="#success" style={{ color: '#1e293b', textDecoration: 'none', fontWeight: '800', fontSize: '1.05rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.target.style.color = 'var(--primary-color)'} onMouseOut={(e) => e.target.style.color = '#1e293b'}>Impact</a>
             <a href="#insights" style={{ color: '#1e293b', textDecoration: 'none', fontWeight: '800', fontSize: '1.05rem', transition: 'color 0.2s' }} onMouseOver={(e) => e.target.style.color = 'var(--primary-color)'} onMouseOut={(e) => e.target.style.color = '#1e293b'}>Insights</a>
@@ -38,6 +38,7 @@ export default function Landing() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <button 
+                className="landing-login-btn"
                 onClick={() => navigate('/auth')} 
                 style={{ padding: '14px 34px', background: 'var(--primary-color)', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: '800', fontSize: '1.05rem', cursor: 'pointer', transition: 'background 0.3s', display: 'flex', alignItems: 'center', gap: '8px' }}
                 onMouseOver={(e) => e.currentTarget.style.background = '#3730a3'}
@@ -50,7 +51,7 @@ export default function Landing() {
       </div>
 
       {/* Hero Section */}
-      <section style={{ 
+      <section className="landing-hero" style={{ 
         position: 'relative', 
         padding: '160px 40px 100px 40px', 
         minHeight: '85vh', 
@@ -62,7 +63,7 @@ export default function Landing() {
         backgroundAttachment: 'scroll' 
       }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto', width: '100%', position: 'relative', zIndex: 10 }}>
-          <div style={{ 
+          <div className="landing-hero-box" style={{ 
             background: 'rgba(15, 23, 42, 0.4)', 
             backdropFilter: 'blur(20px)', 
             WebkitBackdropFilter: 'blur(20px)',
@@ -72,7 +73,7 @@ export default function Landing() {
             maxWidth: '750px',
             boxShadow: '0 25px 50px rgba(0,0,0,0.3)'
           }}>
-            <h1 style={{ fontSize: '4.5rem', fontWeight: '800', color: '#ffffff', lineHeight: '1.15', marginBottom: '32px', letterSpacing: '-1px' }}>
+            <h1 className="landing-hero-title" style={{ fontSize: '4.5rem', fontWeight: '800', color: '#ffffff', lineHeight: '1.15', marginBottom: '32px', letterSpacing: '-1px' }}>
               Unite teams. <br/>Simplify workflows.<br/><span style={{ color: 'var(--primary-color)' }}>Improve outcomes.</span>
             </h1>
             <p style={{ fontSize: '1.25rem', color: '#e2e8f0', lineHeight: '1.7', marginBottom: '40px' }}>
@@ -91,9 +92,9 @@ export default function Landing() {
       </section>
 
       {/* 1. SEGVEMENTS WE SERVE */}
-      <section id="segments" style={{ padding: '100px 40px', background: '#e5e7eb' }}>
+      <section id="segments" className="landing-section" style={{ padding: '100px 40px', background: '#e5e7eb' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <h2 style={{ fontSize: '3rem', fontWeight: '800', color: '#000', marginBottom: '60px', textAlign: 'center', letterSpacing: '-1px' }}>Learn More About the Segments We Serve</h2>
+          <h2 className="landing-section-title" style={{ fontSize: '3rem', fontWeight: '800', color: '#000', marginBottom: '60px', textAlign: 'center', letterSpacing: '-1px' }}>Learn More About the Segments We Serve</h2>
           
           <div style={{ display: 'flex', gap: '40px', flexWrap: 'wrap', justifyContent: 'center' }}>
             <div style={{ flex: '1', minWidth: '350px', maxWidth: '500px' }}>
@@ -118,15 +119,15 @@ export default function Landing() {
       </section>
 
       {/* 2. SUCCESS STORIES */}
-      <section id="success" style={{ padding: '120px 40px', background: '#f8f9fa' }}>
+      <section id="success" className="landing-section" style={{ padding: '120px 40px', background: '#f8f9fa' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <h2 style={{ fontSize: '3rem', fontWeight: '800', color: '#000', marginBottom: '60px', textAlign: 'center', letterSpacing: '-1px' }}>Featured Customer Success Stories</h2>
+          <h2 className="landing-section-title" style={{ fontSize: '3rem', fontWeight: '800', color: '#000', marginBottom: '60px', textAlign: 'center', letterSpacing: '-1px' }}>Featured Customer Success Stories</h2>
           
-          <div style={{ display: 'flex', gap: '0', flexWrap: 'wrap', alignItems: 'center', background: '#fff', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.06)' }}>
-            <div style={{ flex: 1.2, minWidth: '400px' }}>
-               <img src="https://images.pexels.com/photos/4386476/pexels-photo-4386476.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Success Story" style={{ width: '100%', height: '100%', minHeight: '500px', objectFit: 'cover' }} />
+          <div className="landing-success-box" style={{ display: 'flex', gap: '0', flexWrap: 'wrap', alignItems: 'center', background: '#fff', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.06)' }}>
+            <div className="landing-success-img-container" style={{ flex: 1.2, minWidth: '400px' }}>
+               <img className="landing-success-img" src="https://images.pexels.com/photos/4386476/pexels-photo-4386476.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Success Story" style={{ width: '100%', height: '100%', minHeight: '500px', objectFit: 'cover' }} />
             </div>
-            <div style={{ flex: 1, minWidth: '400px', padding: '60px' }}>
+            <div className="landing-success-content" style={{ flex: 1, minWidth: '400px', padding: '60px' }}>
               <div style={{ fontSize: '0.9rem', fontWeight: '700', color: '#666', letterSpacing: '1px', marginBottom: '16px', textTransform: 'uppercase' }}>Success Story</div>
               <h2 style={{ fontSize: '2.5rem', fontWeight: '800', color: '#000', marginBottom: '24px', lineHeight: '1.1', letterSpacing: '-0.5px' }}>Clínica de las Américas Utilizes Medicare's Automated Solutions to Ensure Patient Safety and Care</h2>
               <p style={{ fontSize: '1.1rem', color: '#333', lineHeight: '1.7', marginBottom: '40px' }}>
@@ -143,9 +144,9 @@ export default function Landing() {
       </section>
 
       {/* 3. ADDITIONAL INSIGHTS */}
-      <section id="insights" style={{ padding: '100px 40px', background: '#e5e7eb' }}>
+      <section id="insights" className="landing-section" style={{ padding: '100px 40px', background: '#e5e7eb' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <h2 style={{ fontSize: '3rem', fontWeight: '800', color: '#000', marginBottom: '60px', textAlign: 'center', letterSpacing: '-1px' }}>Explore Additional Healthcare Insights</h2>
+          <h2 className="landing-section-title" style={{ fontSize: '3rem', fontWeight: '800', color: '#000', marginBottom: '60px', textAlign: 'center', letterSpacing: '-1px' }}>Explore Additional Healthcare Insights</h2>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
              
@@ -178,10 +179,10 @@ export default function Landing() {
       </section>
 
       {/* TECH ECOSYSTEM */}
-      <section style={{ padding: '120px 40px', background: '#0f172a', color: 'white' }}>
+      <section className="landing-section" style={{ padding: '120px 40px', background: '#0f172a', color: 'white' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '80px' }}>
-            <h2 style={{ fontSize: '3.5rem', fontWeight: '800', marginBottom: '24px', letterSpacing: '-0.5px' }}>Comprehensive Tech Ecosystem</h2>
+            <h2 className="landing-section-title" style={{ fontSize: '3.5rem', fontWeight: '800', marginBottom: '24px', letterSpacing: '-0.5px' }}>Comprehensive Tech Ecosystem</h2>
             <p style={{ fontSize: '1.25rem', color: '#94a3b8', maxWidth: '800px', margin: '0 auto', lineHeight: '1.6' }}>Beyond baseline tracking, MediCare Pro provides specialized modules covering every edge case in modern clinic administration and patient operations.</p>
           </div>
 
@@ -212,9 +213,9 @@ export default function Landing() {
 
       {/* Footer */}
       <footer style={{ background: '#000000', color: '#ffffff', paddingTop: '60px', paddingBottom: '30px', fontFamily: '"Inter", sans-serif' }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 40px' }}>
+        <div className="landing-footer-container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 40px' }}>
           
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '60px', paddingBottom: '40px', borderBottom: '1px solid #333', flexWrap: 'wrap', gap: '32px' }}>
+          <div className="landing-footer-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '60px', paddingBottom: '40px', borderBottom: '1px solid #333', flexWrap: 'wrap', gap: '32px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <Stethoscope size={40} color="#ffffff" strokeWidth={2} />
               <span style={{ fontSize: '2rem', fontWeight: '800', letterSpacing: '1px' }}>MediCare Pro</span>

@@ -295,3 +295,66 @@ h1 {
     font-size: 1.5rem !important;
   }
 }
+
+/* Landing Page Responsive */
+@media (max-width: 768px) {
+  .landing-top-belt {
+    display: none !important;
+  }
+  .landing-nav {
+    padding: 0 20px !important;
+    height: 70px !important;
+  }
+  .landing-nav-logo {
+    font-size: 1.5rem !important;
+  }
+  .landing-nav-logo svg {
+    width: 28px !important;
+    height: 28px !important;
+  }
+  .landing-nav-links {
+    display: none !important;
+  }
+  .landing-login-btn {
+    padding: 10px 20px !important;
+    font-size: 0.9rem !important;
+  }
+  .landing-hero {
+    padding: 120px 20px 60px 20px !important;
+  }
+  .landing-hero-box {
+    padding: 30px !important;
+  }
+  .landing-hero-title {
+    font-size: 2.2rem !important;
+    margin-bottom: 20px !important;
+  }
+  .landing-section {
+    padding: 60px 20px !important;
+  }
+  .landing-section-title {
+    font-size: 2rem !important;
+    margin-bottom: 40px !important;
+  }
+  .landing-success-box {
+    flex-direction: column !important;
+  }
+  .landing-success-img-container {
+    min-width: 100% !important;
+  }
+  .landing-success-img {
+    min-height: 250px !important;
+  }
+  .landing-success-content {
+    min-width: 100% !important;
+    padding: 30px !important;
+  }
+  .landing-footer-container {
+    padding: 0 20px !important;
+  }
+  .landing-footer-top {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 20px !important;
+  }
+}
